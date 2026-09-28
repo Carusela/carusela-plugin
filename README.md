@@ -1,8 +1,18 @@
+[![Carusela for Claude Code: Your club. One conversation.](assets/brand/social-preview.png)](https://carusela.com)
+
 # Carusela for Claude Code
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-163300?style=flat-square&labelColor=0e2200)](LICENSE)
+[![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-9fe870?style=flat-square&labelColor=163300)](#install)
+[![Visit Carusela](https://img.shields.io/badge/carusela.com-Visit-9fe870?style=flat-square&labelColor=163300)](https://carusela.com)
+
+[Install](#install) · [Skills](#why-a-plugin-and-not-just-the-mcp) · [Safety](#safety) · [Contributing](#contributing)
 
 Run your [Carusela](https://carusela.com) club from Claude Code. Build courses, upload a library,
 brand the club, set access tiers, build sales pages and funnels and configure its AI mentor, by
 talking to Claude.
+
+## Install
 
 ```
 /plugin marketplace add dangogit/carusela-plugin
@@ -68,6 +78,19 @@ are counts only.
 
 - [Claude Code](https://claude.com/claude-code)
 - A Carusela club, and the platform account that owns it
+
+## Contributing
+
+Found a missing workflow or an unclear instruction? [Open an issue](https://github.com/dangogit/carusela-plugin/issues)
+with what you asked Claude to do and what you expected. Leave out tokens, member data and
+private club content.
+
+Skill improvements and documentation fixes are welcome as pull requests. Each skill lives in
+[`plugins/carusela/skills`](plugins/carusela/skills). Keep changes focused and preserve the
+preview and approval steps for actions that publish content or change money and access.
+
+For articles, demos and integrations, the [brand assets](assets/brand) include the logo,
+wordmark, banner source and a social preview image.
 
 ## Licence
 

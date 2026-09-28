@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title description">
+  <title id="title">Carusela for Claude Code</title>
+  <desc id="description">Your club. One conversation. Courses, content and community, through Claude Code. An open-source plugin with seven skills, MCP and OAuth.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#9fe870" stroke-opacity=".06"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="640" fill="#163300"/>
+  <rect x="744" width="536" height="640" fill="url(#grid)"/>
+  <g fill="none" stroke="#9fe870" stroke-opacity=".14">
+    <circle cx="1040" cy="304" r="250"/>
+    <circle cx="1040" cy="304" r="194"/>
+  </g>
+  <g transform="translate(64 56)">
+    <rect width="56" height="56" rx="17.5" fill="#9fe870"/>
+    <path d="M36.75 36.75A14 14 0 1 1 36.75 19.25" fill="none" stroke="#163300" stroke-linecap="round" stroke-width="7"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="137" y="94" fill="#ffffff" font-size="35" font-weight="700" letter-spacing="-1">Carusela</text>
+    <text x="64" y="180" fill="#9fe870" font-size="15" font-weight="700" letter-spacing="3">FOR CLAUDE CODE</text>
+    <text x="60" y="280" fill="#ffffff" font-size="76" font-weight="700" letter-spacing="-3">Your club.</text>
+    <text x="60" y="369" fill="#9fe870" font-size="76" font-weight="700" letter-spacing="-3">One conversation.</text>
+    <text x="64" y="432" fill="#d6f7bf" font-size="24">Courses, content and community,</text>
+    <text x="64" y="467" fill="#d6f7bf" font-size="24">through Claude Code.</text>
+  </g>
+  <g transform="translate(882 160) scale(3)">
+    <rect width="64" height="64" rx="20" fill="#9fe870"/>
+    <path d="M42 42A16 16 0 1 1 42 22" fill="none" stroke="#163300" stroke-linecap="round" stroke-width="8"/>
+  </g>
+  <rect x="808" y="388" width="396" height="90" rx="16" fill="#0e2200" stroke="#234d0a" stroke-width="2"/>
+  <g font-family="Menlo, Consolas, monospace" font-size="18">
+    <text x="831" y="424" fill="#9fe870">&gt; <tspan fill="#ffffff">Build a course</tspan></text>
+    <text x="853" y="453" fill="#ffffff">from these notes.</text>
+  </g>
+  <path d="M64 539H1216" stroke="#9fe870" stroke-opacity=".25"/>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="16">
+    <text x="64" y="585" fill="#d6f7bf">7 skills <tspan dx="14" fill="#9fe870">/</tspan><tspan dx="14">MCP + OAuth</tspan><tspan dx="14" fill="#9fe870">/</tspan><tspan dx="14">Open source · MIT</tspan></text>
+    <text x="1216" y="585" text-anchor="end" fill="#9fe870">carusela.com</text>
+  </g>
+</svg>
