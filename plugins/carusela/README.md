@@ -7,7 +7,7 @@ refused on purpose and stops publishing things nobody reviewed.
 ## Install
 
 ```
-/plugin marketplace add dangogit/carusela-plugin
+/plugin marketplace add Carusela/carusela-plugin
 /plugin install carusela@carusela
 ```
 
