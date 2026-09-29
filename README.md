@@ -15,7 +15,7 @@ talking to Claude.
 ## Install
 
 ```
-/plugin marketplace add dangogit/carusela-plugin
+/plugin marketplace add Carusela/carusela-plugin
 /plugin install carusela@carusela
 ```
 
@@ -81,7 +81,7 @@ are counts only.
 
 ## Contributing
 
-Found a missing workflow or an unclear instruction? [Open an issue](https://github.com/dangogit/carusela-plugin/issues)
+Found a missing workflow or an unclear instruction? [Open an issue](https://github.com/Carusela/carusela-plugin/issues)
 with what you asked Claude to do and what you expected. Leave out tokens, member data and
 private club content.
 
