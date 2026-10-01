@@ -53,7 +53,7 @@ preview, and applies it only after you say yes. Sales pages, funnels and A/B tes
 way. Claude never charges or refunds a member, and it cannot connect your CardCom terminal: you do
 that yourself in the admin, under payments.
 
-Feature flags are yours to switch in the admin under "יכולות המועדון", and the navigation rail is
+Feature flags are yours to switch in the admin under "יכולות הקהילה", and the navigation rail is
 edited in the admin as well. Claude does neither.
 
 There are no repository, deploy, DNS or domain tools here, and Carusela stores no such

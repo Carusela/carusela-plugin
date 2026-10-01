@@ -108,7 +108,7 @@ Sales pages and Funnels sit on top of Ring C. Each has its own token gate, or a 
 saved Funnel draft can go live inside the same approved commercial batch. See `build-sales-funnel`.
 
 **Feature flags are the owner's, in the admin.** Whether the community, groups, events, the AI
-mentor or the agents page is on is switched in the admin under "יכולות המועדון", `/admin?tab=features`.
+mentor or the agents page is on is switched in the admin under "יכולות הקהילה", `/admin?tab=features`.
 MCP reads them through `get_config` and refuses to create content behind a flag that is off; it
 does not flip one. The door is that tab, not "ask Carusela".
 
