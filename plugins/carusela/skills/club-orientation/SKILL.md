@@ -25,10 +25,25 @@ in this surface come from writing into a club whose shape you assumed.
 guessing puts a lesson in a stranger's club. Call `list_my_clubs`, and if more than one comes
 back and the user has not said which, ask.
 
-**Never treat "yes" in the chat as the authorization.** Every gated write on this server spends a
-single-use token that only its preview or confirm tool can mint. The person's yes is what lets you
-make that call; the token is what the server checks. A spender called without its token is
-refused, and it should be.
+**Never add a confirmation step the server does not have.** The design, commerce, Sales page,
+Funnel and A/B test tools apply the change in the call itself. There is no token, no draft to
+approve and no second call: the owner asking for the change is the approval. So:
+
+- **The request names the change** (a colour, a price, "publish the page"): make the call in the
+  same turn. Do not stop to ask "should I publish?".
+- **The request leaves a value open** (no price given, no winner named, which lessons go behind
+  which tier): ask for the value. That is a question about what to do, not a confirmation.
+- **The owner asks to see it first**: the read-only previews for Sales pages and Funnels show it
+  without writing (see `build-sales-funnel`). Design has no look-first mode over MCP.
+
+Never send `confirmation_token`. No tool accepts it now; a tool that receives it refuses the call
+and the refusal names the retired argument. Call again without it, after reading the current
+state.
+
+Exactly two writes still wait for the owner: emailing real people needs their yes to the
+recipient count (`confirm_recipient_count`), and a migration import runs only after the owner
+approves its plan in the admin screen. An attestation a tool says only the owner can give (the
+mailing-list consent on `import_mailing_contacts`) is never supplied on their behalf: ask for it.
 
 ## The one thing to do first
 
@@ -50,11 +65,11 @@ Three read-only calls. They cost nothing and they answer most of what you were a
 | Add an event or a group | `manage_event`, `manage_group` |
 | Organise | `manage_category`, `set_content_visibility` |
 | Change words | `update_club_copy` |
-| Change colours, logos or the home page's block order | `preview_design_change` then `publish_design` |
+| Change colours, logos or the home page's block order | `preview_design_change`, which publishes in the same call |
 | Bring in a video or upload a file | `attach_media` |
 | Bring in members from another system | `import_members` |
 | See what is for sale, and whether the club can sell | `get_commerce_catalog`, `get_commerce_changes`, `get_commerce_readiness` |
-| Set a price, an offer, a trial, a coupon or a member tier | `manage_offer`, `manage_coupon`, `manage_membership_tier`, then `preview_commerce_changes` and `apply_commerce_changes` |
+| Set a price, an offer, a trial, a coupon or a member tier | `manage_offer`, `manage_coupon`, `manage_membership_tier`, then `apply_commerce_changes` |
 | Build a Sales page and its Funnel | see `build-sales-funnel` |
 | See what has been done | `get_audit_log` |
 
@@ -67,27 +82,33 @@ user has not told you what the new wording should be, get it from them before yo
 the ring being ungated means is that a wrong word is cheap to correct, not that nobody needs to
 see it.
 
-**Ring B is design.** Colours, brand assets and the home page's block composition. It needs a
-human to look at it first, so it has two steps: `preview_design_change` stages a draft and returns
-a single-use token plus a link a person can open, and `publish_design` spends that token. There is
-no way to publish design without previewing. The home page's `home_blocks` is a whole-list
-replace: read the current list with `get_config` and send all of it, because a block you leave out
-is removed. See `brand-a-club`.
+**Ring B is design.** Colours, brand assets and the home page's block composition.
+`preview_design_change` publishes them in the call itself and returns exactly what changed, from
+what to what. Despite its name it is not a preview. A design draft somebody saved in the admin and
+did not publish goes live with it and shows in the same diff; `get_config` shows whether one
+exists. `publish_design` takes no argument and publishes only that admin draft, when the owner
+asks. The home page's `home_blocks` is a whole-list replace: read the current list with
+`get_config` and send all of it, because a block you leave out is removed. To undo, call
+`preview_design_change` again with the old values, or revert a version in the admin versions tab
+(`/admin?tab=brand-versions`).
+See `brand-a-club`.
 
 **Ring C is money and access.** Prices, offers, trials, instalments, coupons and member tiers.
-Only an owner or an admin of the club can call these tools, and they write in two steps:
+Only an owner or an admin of the club can call these tools. They stage, then apply, both in the
+same turn when the owner asked for the change:
 
 1. **Stage.** `manage_offer`, `manage_membership_tier` and `manage_coupon` each take the
    complete desired values, never a patch, plus a `request_id` you reuse on a retry. Staging
    changes nothing a member can see: a new resource stays unpublished or inactive, and an
    existing live one is untouched until apply. To revise a staged draft, pass its `draft_id`
-   with its exact `expected_revision`; `get_commerce_changes` lists your open drafts.
-2. **Preview, then apply.** `preview_commerce_changes` takes the draft revisions (and,
-   optionally, Sales page ids and draft course ids to publish in the same batch) and returns the
-   exact proposal, a buyer preview, the club's selling readiness and a confirmation token that
-   expires after 10 minutes. Show the person the proposal. `apply_commerce_changes` spends that
-   token only after they approve it. The batch applies whole or not at all; if a resource or a
-   draft moved since the preview, it is refused and you preview again.
+   with its exact `expected_revision`; `get_commerce_changes` lists your open drafts. If the owner
+   decides against a staged change, `abandon_commerce_change` takes it back.
+2. **Apply.** `apply_commerce_changes` takes the draft ids and revisions (and, optionally, Sales
+   page ids and draft course ids to publish in the same batch) and applies them in that call. It
+   returns what was applied and the buyer preview. The batch applies whole or not at all: a draft
+   no longer staged at that revision, or a live row that changed since staging, refuses all of
+   it. `preview_commerce_changes` writes nothing and only points at `apply_commerce_changes`;
+   skip it. To undo, stage the previous values and apply them the same way.
 
 What the server checks before it stages anything: an offer sells exactly one product (a member
 tier or a course), its price is a whole number of agorot, its interval is `one_time`, `monthly`
@@ -104,8 +125,9 @@ is true only when the status is `ready`. Read it before promising anybody a paid
 it is not ready, send the owner to the payments tab rather than looking for another way. Nothing
 in Ring C charges a member or refunds one.
 
-Sales pages and Funnels sit on top of Ring C. Each has its own token gate, or a Sales page and its
-saved Funnel draft can go live inside the same approved commercial batch. See `build-sales-funnel`.
+Sales pages and Funnels sit on top of Ring C. Each publishes in one call and rolls back in one
+call, or a Sales page and its saved Funnel draft can go live inside the same commercial batch. See
+`build-sales-funnel`.
 
 **Feature flags are the owner's, in the admin.** Whether the community, groups, events, the AI
 mentor or the agents page is on is switched in the admin under "יכולות הקהילה", `/admin?tab=features`.
@@ -115,17 +137,18 @@ does not flip one. The door is that tab, not "ask Carusela".
 ## What MCP will never do, so stop looking
 
 - Charge a member, refund one, or connect or change the payment terminal
-- Apply a commercial change, publish a Sales page or a Funnel, or start or end an A/B test without
-  the single-use token from a preview or confirm step the person approved
+- Email real people without the owner's yes to the recipient count, or run a migration import
+  the owner has not approved in the admin
 - Switch a feature flag
 - Reorder the navigation rail
 - Touch a repository, a deployment, DNS or a domain
 - Read a member's contact details outside the member tools that hold the `member_pii` capability
 
-Each has a real door: the admin payments tab for the terminal, the preview or confirm tool for a
-token, the features tab for flags, the admin CHROME tab for the rail. Tell the user which door,
-and say plainly that this surface will not do it. Then carry on with the part you can do. A
-refusal the user cannot act on is worse than no answer, so the door is the part that matters.
+Each has a real door: the admin payments tab for the terminal, the owner's yes to the recipient
+count for an email, the admin screen for a migration plan, the features tab for flags, the admin
+CHROME tab for the rail. Tell the user which door, and say plainly that this surface will not go
+around it. Then carry on with the part you can do. A refusal the user cannot act on is worse than
+no answer, so the door is the part that matters.
 
 ## Three traps that cost real time
 

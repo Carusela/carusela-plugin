@@ -36,9 +36,9 @@ The seven skills are the part that stops that.
 |---|---|
 | `club-orientation` | the map, and which refusals are correct so Claude stops trying to route around them |
 | `seed-club-content` | importing or bulk-creating content without losing fields or publishing early |
-| `brand-a-club` | colours, logo, favicon and social card, through the preview-then-publish gate |
+| `brand-a-club` | colours, logo, favicon and social card, published in the call you ask for them |
 | `gate-club-access` | what each access tier reaches |
-| `build-sales-funnel` | offers, coupons, a sales page (blocks, your own designed HTML page, or your own site) and its funnel, each approved by you before it goes live |
+| `build-sales-funnel` | offers, coupons, a sales page (blocks, your own designed HTML page, or your own site) and its funnel, live when you ask for them and one request away from the previous version |
 | `audit-club-content` | what got created successfully and is still invisible |
 | `tune-club-mentor` | making the club's AI assistant answer from your own material |
 
@@ -47,11 +47,15 @@ They load from their descriptions, so in practice you say what you want. You can
 
 ## What it will not do
 
-Prices, offers, coupons, trials, instalments and member tiers decide money and access, so Claude
-never changes them in one step. It stages a draft, shows you the exact proposal and a buyer
-preview, and applies it only after you say yes. Sales pages, funnels and A/B tests go live the same
-way. Claude never charges or refunds a member, and it cannot connect your CardCom terminal: you do
-that yourself in the admin, under payments.
+Prices, offers, coupons, trials, instalments and member tiers decide money and access. When you
+ask for one, Claude stages it and applies it in the same turn: your request is the approval, with
+no token and no second confirmation call. If you left the price open, Claude asks for it rather
+than inventing one. Sales pages, funnels and A/B tests go live the same way, and you can ask to see
+a sales page or a funnel first. Claude never charges or refunds a member, and it cannot connect
+your CardCom terminal: you do that yourself in the admin, under payments.
+
+Two writes still wait for your yes: an email to real people, after Claude tells you how many
+recipients it reaches, and a migration import, whose plan you approve in the admin.
 
 Feature flags are yours to switch in the admin under "יכולות הקהילה", and the navigation rail is
 edited in the admin as well. Claude does neither.
@@ -66,9 +70,11 @@ Every call is written to your club's audit log with `source: "mcp"`, including t
 failed and the arguments they carried, with email addresses redacted. Ask Claude to "show the
 audit log".
 
-Design, commercial, sales page and funnel changes cannot go live without a preview: staging
-returns what would change and a single-use token that publishing spends, and the skills require
-showing it to you first.
+Design, commercial, sales page and funnel changes apply in the call that makes them, and the
+result says what changed, from what to what. Every design, sales page and funnel publish is kept
+as a version. A sales page or a funnel goes back to an earlier version in one request. A design
+goes back when Claude applies the previous values again, or from the versions screen in your club
+admin. A price or an offer goes back when Claude stages the previous values and applies them.
 
 Member names, email addresses and phone numbers come back only from the member tools, such as
 `list_members` and `get_member`, which only the club's owner and admins can use. Member statistics
@@ -86,8 +92,9 @@ with what you asked Claude to do and what you expected. Leave out tokens, member
 private club content.
 
 Skill improvements and documentation fixes are welcome as pull requests. Each skill lives in
-[`plugins/carusela/skills`](plugins/carusela/skills). Keep changes focused and preserve the
-preview and approval steps for actions that publish content or change money and access.
+[`plugins/carusela/skills`](plugins/carusela/skills). Keep changes focused, and keep the skills in
+step with the server: add no approval step it does not have, and keep the two it does, an email's
+recipient count and a migration plan.
 
 For articles, demos and integrations, the [brand assets](assets/brand) include the logo,
 wordmark, banner source and a social preview image.

@@ -1,30 +1,33 @@
 ---
 name: build-sales-funnel
-description: Build and publish a Carusela Sales page and its Funnel (Order bumps, Upsells, Downsells and the Thank You page) through the Carusela MCP, with every price and every publication approved by a person first. Use when somebody wants to sell a course or a membership, set up a sales page (from blocks, as their own designed HTML page, or on their own site), a checkout, an order bump, an upsell or downsell, a thank-you page (designed HTML pages for upsells and the thank-you included), a coupon for a launch, an A/B test between funnel versions, or to roll a sales page or funnel back.
+description: Build and publish a Carusela Sales page and its Funnel (Order bumps, Upsells, Downsells and the Thank You page) through the Carusela MCP. Each price, publication, rollback and A/B test goes live in the call the owner asks for, with no second confirmation call. Use when somebody wants to sell a course or a membership, set up a sales page (from blocks, as their own designed HTML page, or on their own site), a checkout, an order bump, an upsell or downsell, a thank-you page (designed HTML pages for upsells and the thank-you included), a coupon for a launch, an A/B test between funnel versions, or to roll a sales page or funnel back.
 ---
 
 # Build a sales funnel
 
 ## What this skill forbids
 
-**Never call a spending tool without a person's explicit yes in the chat.** The spenders are
-`apply_commerce_changes`, `publish_sales_page`, `rollback_sales_page`, `publish_sales_funnel`,
-`rollback_sales_funnel`, `start_sales_funnel_experiment` and `end_sales_funnel_experiment`, and
-the token issuers that lead to them are `preview_commerce_changes`, `preview_sales_page`,
-`preview_sales_page_rollback`, `confirm_sales_funnel_publish`, `confirm_sales_funnel_rollback` and
-`confirm_sales_funnel_experiment`. Show the person what the preview or the issuer returned, wait
-for a yes to that exact thing, then spend. For a Funnel and an A/B test, get that yes before the
-confirm call as well: `preview_sales_funnel` and `save_sales_funnel_experiment` both say to confirm
-only once the person approves.
+**Never put live what the owner did not ask for.** These tools change what a buyer meets, and
+each one applies in the call itself: `apply_commerce_changes`, `publish_sales_page`,
+`rollback_sales_page`, `publish_sales_funnel`, `rollback_sales_funnel`,
+`start_sales_funnel_experiment` and `end_sales_funnel_experiment`. There is no token, no draft to
+approve and no second call. The owner asking for the change is the approval, so when they asked
+for the page to go live, publish it in the same turn; do not stop to ask "should I publish?". When
+the request leaves a price, a coupon or a test's winner open, ask for that value: a price you
+invented is a price a buyer pays.
 
-**Never treat that yes as the authorization.** The token is. Each one is single-use, short-lived,
-minted only by its issuer and bound to this club, this account and the exact state that was
-shown. The server refuses a spender without its token, and a yes typed in chat does not change
-that. A yes to one preview does not carry over to the next: if anything moved and you preview
-again, show the new result and ask again.
+**Never send `confirmation_token`.** No tool accepts it now. A tool that receives it refuses the
+call, names the retired argument and says to call again without it after reading the current
+state.
 
-**Never retry a refused token.** A spent, expired or stale token is refused on purpose. Read the
-current state, preview or confirm again, show it again.
+**Never use `preview_commerce_changes` or `confirm_sales_funnel_experiment` as a step.** Both write
+nothing and answer only with the call to make next. Call `apply_commerce_changes`,
+`start_sales_funnel_experiment` or `end_sales_funnel_experiment` directly.
+
+**Never stage or publish again because a repeat was refused.** A call that arrives twice meets
+what the first one already did: `already_live`, "nothing staged to publish", a draft no longer
+staged at that revision, a test that is already running. Read `get_audit_log` and the current
+state; act again only when the owner wants a further change.
 
 **Never promise a buyer can pay before `get_commerce_readiness` says `ready`.** The club's
 CardCom terminal is connected by a person, by hand, at `/admin?tab=payments`. Never ask for
@@ -110,7 +113,7 @@ retry the same request), and `values` holds the complete desired state, never a 
 | `interval` | `one_time`, `monthly` or `yearly` |
 | `trialDays` | 0 or more, and 0 on a one-time offer |
 | `allowsInstalments`, `maxInstalments` | one-time offers only; `maxInstalments` at least 2 and only with instalments on |
-| `isPublished` | the state after approval, default true |
+| `isPublished` | the state once applied, default true |
 | `orderBumpOfferId` | the offer's own single order bump, or null |
 
 `manage_coupon` values: `code` (stored in upper case), `discountType` `percent` or `fixed`,
@@ -120,26 +123,32 @@ retry the same request), and `values` holds the complete desired state, never a 
 Staging changes nothing live: a new offer, tier or coupon stays unpublished or inactive, and an
 existing live one is untouched until apply.
 
-Then:
+Then apply, in the same turn when the owner asked for the change:
 
 ```
-preview_commerce_changes  { changes: [{id, revision}], page_ids?, course_ids? }
-  -> drafts, pages, readiness, confirmation_token, expires_at (10 minutes)
-apply_commerce_changes    { confirmation_token }
+apply_commerce_changes  { changes: [{id, revision}], page_ids?, course_ids? }
+  -> what was applied, the buyer preview, readiness
 ```
 
-Show the person every proposed price, interval, trial, instalment count, coupon and access level,
-and the price-change effects the preview lists for an existing offer (new buyers pay the new
-price at once, active subscribers keep the old price until their next renewal, past orders do
-not change). Call `apply_commerce_changes` only after their yes. The batch applies whole or not
-at all. It never charges anybody.
+Up to 50 drafts, 20 pages and 50 courses. It applies them in that call. The batch applies whole
+or not at all: a draft that is no longer staged at that revision, or a live row that changed since
+staging, refuses all of it and nothing is applied. It never charges anybody.
+
+Tell the owner what went live: every price, interval, trial, instalment count, coupon and access
+level, and the price-change effects the result lists for an existing offer (new buyers pay the new
+price at once, active subscribers keep the old price until their next renewal, past orders do not
+change).
+
+To undo, stage the previous values with the same `manage_` tool and apply them the same way. A
+staged change the owner decides against is taken back with `abandon_commerce_change`
+(`draft_id`, `expected_revision`).
 
 `page_ids` and `course_ids` make the same batch publish Sales pages and draft courses too. For a
 selected page, apply publishes its current draft and, when the page's Funnel has a saved draft,
 publishes that Funnel as well, all in one transaction. That is the shortest path for a new club:
-stage the offers, build the page and the Funnel on draft offers, then approve and apply the whole
-launch at once. A page in the batch still has to pass its own publish readiness, judged against
-the proposed offers.
+stage the offers, build the page and the Funnel on draft offers, then apply the whole launch in
+one call. A page in the batch still has to pass its own publish readiness, judged against the
+proposed offers.
 
 ### 4. The Sales page
 
@@ -234,16 +243,23 @@ Uploading needs the `commerce` capability; editing the draft needs `content_edit
 Publishing:
 
 ```
-preview_sales_page  { page_id }
-  -> candidate_document, entry_url, admin_url, confirmation_token, expires_at
-publish_sales_page  { page_id, confirmation_token }
+publish_sales_page   { page_id }           -> published, version
+rollback_sales_page  { page_id, version }  -> rolled_back, restored_from_version, version
 ```
 
-`preview_sales_page` refuses while the page is not ready to publish and names what is missing.
-Show the person the candidate and the admin link, and publish only after their yes. Saving the
-draft again invalidates the token. To go back, `preview_sales_page_rollback` with a `version`
-from the history, then `rollback_sales_page` with the same version and its token; a rollback
-appends the old document as a new version and edits nothing.
+`publish_sales_page` publishes the saved draft as a new version, in that call. It refuses while
+the page is not ready and names what is missing, and a club that has not launched yet cannot
+publish a public Sales page. When the saved draft is already the live version it answers
+`already_live` and appends nothing, so a repeat is safe.
+
+When the owner asks to see the page before it goes live, `preview_sales_page { page_id }` returns
+the exact `candidate_document`, the `entry_url` and the `admin_url`, and writes nothing.
+`preview_sales_page_rollback { page_id, version }` does the same for an older version.
+
+To undo a publish, `rollback_sales_page` with a `version` from `get_sales_page`'s history restores
+it in one request. A rollback appends the old document as a new version and edits nothing, so a
+rollback can itself be rolled back. It has no repeat guard: a second identical call appends the
+same version again, so call it once.
 
 ### 5. The Funnel
 
@@ -252,8 +268,8 @@ get_sales_funnel             { page_id }
 list_funnel_followup_offers  { page_id, role?, page?, limit?, query? }
 edit_sales_funnel_draft      { page_id, expected_draft_revision, expected_live_version, draft }
 preview_sales_funnel         { page_id, expected_draft_revision, expected_live_version, draft }
-confirm_sales_funnel_publish { page_id }
-publish_sales_funnel         { page_id, confirmation_token }
+publish_sales_funnel         { page_id }
+rollback_sales_funnel        { page_id, target_version }
 ```
 
 `get_sales_funnel` returns the current draft with its draft revision, the live version (0
@@ -301,23 +317,28 @@ wants, then check the kinds in the preview.
   `role: "order_bump"` returns exactly the offers that pass these rules.
 - Unpublished offers may sit in a draft. Publication needs them published.
 
-Save with `edit_sales_funnel_draft`, then show the person what a buyer meets:
-`preview_sales_funnel` writes nothing and issues no token, and returns what each Order bump state
-charges at checkout and, for every step, its derived kind, where accepting and declining lead,
-the amount, the access it grants and the consequences. Walk the person through both branches of
-every step.
+Check a candidate with `preview_sales_funnel` before you save it. It writes nothing and returns
+what each Order bump state charges at checkout and, for every step, its derived kind, where
+accepting and declining lead, the amount, the access it grants and the consequences. Then save
+with `edit_sales_funnel_draft`.
 
-After their yes, `confirm_sales_funnel_publish` mints the token and returns the branches walked
-from the **saved** draft. Those are what the token authorizes, so if they differ from what you
-showed, show these and ask again. It refuses while `repairs` is not empty, when there is no saved
-draft, and when an offer or product in the Funnel is still unpublished. Then
-`publish_sales_funnel` with the token. Saving the draft again, or any change to an offer in the
-Funnel, invalidates it.
+When the owner asked for the Funnel to go live, `publish_sales_funnel` publishes the **saved**
+draft as a new version in the same turn. It reads the draft's bindings itself, so a draft or an
+Offer that moves during the call refuses and nothing is published. It refuses while `repairs` is
+not empty and when an offer or product in the Funnel is still unpublished. A publish consumes the
+draft, so a repeat finds nothing staged and says which version is live. Then tell the owner what a
+buyer meets on both branches of every step.
 
-To restore an older version: `confirm_sales_funnel_rollback` with a `target_version` older than
-the live one, show its branches, then `rollback_sales_funnel` with the same version and the token
-after a yes. It appends that version as a new one. A version whose follow-up offer has since been
-unpublished is refused. Buyers already in a session stay on the version they entered on.
+When the owner wants to walk the saved draft before it goes live, `confirm_sales_funnel_publish
+{ page_id }` returns exactly what the publish would put live, both branches included, and writes
+nothing.
+
+To restore an older version, `rollback_sales_funnel` with a `target_version` older than the live
+one restores it in one request, by appending it as a new version. A version whose follow-up offer
+has since been unpublished is refused. Buyers already in a session stay on the version they
+entered on. `confirm_sales_funnel_rollback { page_id, target_version }` walks that version first
+when the owner asks, and writes nothing. A rollback has no repeat guard: a second identical call
+appends the same version again.
 
 A Sales page with no live Funnel cannot take buyers, hosted or external. When the owner wants no bumps and no
 steps, publish a Funnel that is only a Thank You.
@@ -328,20 +349,25 @@ Only once the Funnel has at least two published versions; before that
 `get_sales_funnel_experiments` reports `state: "unavailable"`.
 
 ```
-get_sales_funnel_experiments     { page_id }
-save_sales_funnel_experiment     { page_id, experiment_id | null, expected_revision | null, name, variants }
-confirm_sales_funnel_experiment  { page_id, experiment_id, action: "start" | "end",
-                                   expected_revision, expected_live_version, variants_digest,
-                                   winner_version }
-start_sales_funnel_experiment    { ..., confirmation_token }
-end_sales_funnel_experiment      { ..., winner_version, confirmation_token }
+get_sales_funnel_experiments   { page_id }
+save_sales_funnel_experiment   { page_id, experiment_id | null, expected_revision | null, name, variants }
+start_sales_funnel_experiment  { page_id, experiment_id, expected_revision, expected_live_version,
+                                 variants_digest }
+end_sales_funnel_experiment    { page_id, experiment_id, expected_revision, expected_live_version,
+                                 variants_digest, winner_version }
 ```
 
 `variants` is 2 to 4 entries of `{ version, weight }`: distinct published versions, whole weights
 of 1 to 99 that sum to exactly 100. Only a draft test can be edited. One test runs per Funnel at a
 time; each new checkout session is pinned to one variant, and a session in progress keeps its
-version. Ending with a `winner_version` publishes that version as the new live Funnel; ending with
-null keeps the live one. Say which of the two the person is approving before you confirm.
+version. Saving returns the test's `revision` and `variants_digest`, and
+`get_sales_funnel_experiments` returns the `live_version`: when the owner asked for the test to
+run, pass those to `start_sales_funnel_experiment` in the same turn. Start and end each apply in
+that call. A start on a test that is already running, or an end on one that already ended, is
+refused and names the status.
+
+Ending with a `winner_version` publishes that version as the new live Funnel; ending with null
+keeps the live one. Pass a winner only when the owner named it.
 
 ## Refusals and what they mean
 
@@ -350,9 +376,14 @@ null keeps the live one. Say which of the two the person is approving before you
 | needs the `commerce` (or `design_publish`) capability, or the seat does not hold it | wrong role, or wrong club | `list_my_clubs`; otherwise a person with that seat does it |
 | the club is suspended and accepts no changes | the owner has to restore the club from the platform billing page | stop and tell the owner; retrying does not help |
 | an existing draft requires its exact revision | `draft_id` sent without `expected_revision`, or the reverse | send both |
-| the commercial change was refused, preview again | a draft or a resource moved, or the token expired or was spent | `get_commerce_changes`, preview again, show again |
-| the draft or the publication history moved | somebody saved since your read | `get_sales_page` or `get_sales_funnel`, then preview again |
-| that confirmation no longer matches this club's Funnel | the token was used, expired, or the draft or an offer behind it moved | `get_sales_funnel`, preview, confirm again |
+| `confirmation_token` is no longer accepted by any tool | an old instruction sent the retired argument | call again with the same arguments without it, after reading the current state |
+| a selected draft is no longer staged at that revision | it was already applied, abandoned or revised, most often by the same apply arriving twice | `get_commerce_changes` and `get_audit_log`; do not stage the same change again on this alone |
+| a live row changed after this draft was staged | the offer, tier or coupon was edited outside the draft | `get_commerce_catalog`, then revise the draft with its `manage_` tool (`draft_id`, `expected_revision`) or abandon it |
+| the draft or the publication history moved | somebody saved since your read; for a Funnel, also a non-empty `repairs` | `get_sales_page` or `get_sales_funnel`; fix any `repairs`, and call again only when what is saved is still what the owner asked for |
+| this no longer matches this club's Funnel | the draft, an offer or an A/B test moved during the call, and nothing changed | `get_sales_funnel` (`get_sales_funnel_experiments` for a test); call again only when what is saved is still what the owner asked for |
+| `already_live` from `publish_sales_page` | the saved draft is already the live version | nothing to do; edit the draft first to change the page |
+| this test is already running, or already ended | the same start or end arrived twice | `get_sales_funnel_experiments` for its status |
+| a version was published, or another test is already running | the Funnel moved, or a second test was started while one runs | `get_sales_funnel_experiments`; end the running test first, calling again does not help while it runs |
 | `request_id` already belongs to a different draft | the id was reused for a different request | reuse the original request unchanged, or pick a new id |
 | slug already belongs to another Sales page | the slug is taken | choose another |
 | `followup_offer_unavailable` on `steps` | that offer cannot be a step | pick from `list_funnel_followup_offers` |
@@ -363,7 +394,7 @@ null keeps the live one. Say which of the two the person is approving before you
 | `max_steps_exceeded`, `max_bumps_exceeded` | more than 12 steps or 3 bumps | trim |
 | `page_not_found` | a `pageSha256` this club never uploaded | `save_sales_funnel_page` first, then use the hash it returns |
 | `funnel_products_unpublished` | an offer or product in the Funnel is unpublished | apply the commerce changes first, or publish through the commerce batch |
-| no saved Funnel draft to publish | nothing to bind a token to | `edit_sales_funnel_draft` first |
+| nothing staged to publish, and the live version | a publish already consumed the draft, or none was ever saved | `get_sales_funnel` and `get_audit_log`; edit the draft only when the owner wants a change |
 | `legacy_document_not_representable` | the old two-offer document shape was sent for a Funnel with bumps or more than two steps | send `{ orderBumps, steps, thankYou }` |
 | a Sales page readiness code, such as `primary_offer_unpublished` or `landing_page_empty` | the page is not ready to publish | fix what it names; `get_sales_page` lists them all |
 

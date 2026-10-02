@@ -1,7 +1,7 @@
 {
   "name": "carusela",
   "description": "Run a Carusela club from Claude Code. Connects the Carusela MCP over OAuth and adds skills for seeding content, branding, access tiers, sales pages and funnels, auditing and the AI mentor.",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "author": {
     "name": "Carusela",
     "url": "https://carusela.com"
