@@ -379,7 +379,7 @@ keeps the live one. Pass a winner only when the owner named it.
 | `confirmation_token` is no longer accepted by any tool | an old instruction sent the retired argument | call again with the same arguments without it, after reading the current state |
 | a selected draft is no longer staged at that revision | it was already applied, abandoned or revised, most often by the same apply arriving twice | `get_commerce_changes` and `get_audit_log`; do not stage the same change again on this alone |
 | a live row changed after this draft was staged | the offer, tier or coupon was edited outside the draft | `get_commerce_catalog`, then revise the draft with its `manage_` tool (`draft_id`, `expected_revision`) or abandon it |
-| the draft or the publication history moved | somebody saved since your read | `get_sales_page` or `get_sales_funnel`; call again only when what is saved is still what the owner asked for |
+| the draft or the publication history moved | somebody saved since your read; for a Funnel, also a non-empty `repairs` | `get_sales_page` or `get_sales_funnel`; fix any `repairs`, and call again only when what is saved is still what the owner asked for |
 | this no longer matches this club's Funnel | the draft, an offer or an A/B test moved during the call, and nothing changed | `get_sales_funnel` (`get_sales_funnel_experiments` for a test); call again only when what is saved is still what the owner asked for |
 | `already_live` from `publish_sales_page` | the saved draft is already the live version | nothing to do; edit the draft first to change the page |
 | this test is already running, or already ended | the same start or end arrived twice | `get_sales_funnel_experiments` for its status |
