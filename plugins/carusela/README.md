@@ -41,7 +41,7 @@ explicit approval applies it. Sales pages, Funnels and A/B tests publish through
 single-use token. Nothing charges a member, and the payment terminal is connected by hand in the
 admin.
 
-Feature flags are switched by the owner in the admin under "יכולות המועדון". The navigation
+Feature flags are switched by the owner in the admin under "יכולות הקהילה". The navigation
 rail is edited in the admin as well. The home page's block list is a design change, previewed
 and published like colours.
 

@@ -48,9 +48,9 @@ everything on it. `manage_group` refuses to create into a switched-off surface, 
 lands there, but anything created before that refusal existed is still sitting where nobody can
 see it. That is what this check is for.
 
-Feature flags are the owner's to flip, in the admin under "יכולות המועדון". MCP does not flip
+Feature flags are the owner's to flip, in the admin under "יכולות הקהילה". MCP does not flip
 them. If content sits behind a false flag, the finding names that tab: "switch X on under
-יכולות המועדון, then the content shows".
+יכולות הקהילה, then the content shows".
 
 ### 3. Categories attached to nothing
 
