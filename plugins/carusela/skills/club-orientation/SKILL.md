@@ -42,7 +42,8 @@ state.
 
 Exactly two writes still wait for the owner: emailing real people needs their yes to the
 recipient count (`confirm_recipient_count`), and a migration import runs only after the owner
-approves its plan in the admin screen.
+approves its plan in the admin screen. An attestation a tool says only the owner can give (the
+mailing-list consent on `import_mailing_contacts`) is never supplied on their behalf: ask for it.
 
 ## The one thing to do first
 
@@ -88,7 +89,8 @@ did not publish goes live with it and shows in the same diff; `get_config` shows
 exists. `publish_design` takes no argument and publishes only that admin draft, when the owner
 asks. The home page's `home_blocks` is a whole-list replace: read the current list with
 `get_config` and send all of it, because a block you leave out is removed. To undo, call
-`preview_design_change` again with the old values, or revert a version in the admin brand screen.
+`preview_design_change` again with the old values, or revert a version in the admin versions tab
+(`/admin?tab=brand-versions`).
 See `brand-a-club`.
 
 **Ring C is money and access.** Prices, offers, trials, instalments, coupons and member tiers.

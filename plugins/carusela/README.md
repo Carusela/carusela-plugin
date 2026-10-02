@@ -78,7 +78,7 @@ Design, commerce, Sales page and Funnel changes apply in the call that makes the
 tool that still receives `confirmation_token` refuses the call and names the retired argument. To
 undo, `rollback_sales_page` and `rollback_sales_funnel` restore an earlier version in one request;
 a design goes back by applying the previous values again or by reverting a version in the admin
-brand screen, and a commercial change by staging and applying the previous values.
+versions tab, and a commercial change by staging and applying the previous values.
 
 Member names, emails and phone numbers come back only from the member tools, such as
 `list_members` and `get_member`, which only the club's owner and admins can use. `get_member_stats`

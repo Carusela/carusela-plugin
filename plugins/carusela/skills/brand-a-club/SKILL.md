@@ -125,11 +125,15 @@ palette cannot be checked from there. Say that rather than claiming dark mode is
 Every publish is a version. Two ways back:
 
 - **Call `preview_design_change` again with the old values.** For colours and assets, the
-  `changes` of the call you are undoing hold them. For `home_blocks`, send the whole list from the
-  `get_config` read you took before the change, because the diff is block by block and the field
-  replaces the list whole.
-- **Revert a version in the admin.** `admin_url` points at the screen that holds the version
-  history: the brand screen, or the home tab for a `home_blocks` change.
+  `changes` of the call you are undoing hold them. For `home_blocks`, send the whole list that was
+  live before the change, because the diff is block by block and the field replaces the list
+  whole. Take it from the `get_config` read before the change only when its `home_blocks_source`
+  was `published`; when it was `draft`, that list was an unpublished admin draft, and the live one
+  is `published.pages.home.blocks` in the same read.
+- **Revert a version in the admin.** The history is its own tab, `/admin?tab=brand-versions`
+  ("גרסאות"), not the screen `admin_url` opens. Restoring a version there loads that whole
+  configuration into a draft that the owner then publishes, so copy and mentor edits published
+  since go back with it. Say so before suggesting it.
 
 There is no MCP rollback tool for design; one request back exists only for Sales pages and
 Funnels.

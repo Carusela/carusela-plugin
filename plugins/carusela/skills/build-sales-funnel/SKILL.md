@@ -383,6 +383,7 @@ keeps the live one. Pass a winner only when the owner named it.
 | this no longer matches this club's Funnel | the draft, an offer or an A/B test moved during the call, and nothing changed | `get_sales_funnel` (`get_sales_funnel_experiments` for a test); call again only when what is saved is still what the owner asked for |
 | `already_live` from `publish_sales_page` | the saved draft is already the live version | nothing to do; edit the draft first to change the page |
 | this test is already running, or already ended | the same start or end arrived twice | `get_sales_funnel_experiments` for its status |
+| a version was published, or another test is already running | the Funnel moved, or a second test was started while one runs | `get_sales_funnel_experiments`; end the running test first, calling again does not help while it runs |
 | `request_id` already belongs to a different draft | the id was reused for a different request | reuse the original request unchanged, or pick a new id |
 | slug already belongs to another Sales page | the slug is taken | choose another |
 | `followup_offer_unavailable` on `steps` | that offer cannot be a step | pick from `list_funnel_followup_offers` |
