@@ -2,7 +2,7 @@
 
 Run your club from Claude Code. This plugin connects the Carusela MCP and adds seven skills that
 keep an agent inside what the surface actually allows, so it stops guessing at fields that are
-refused on purpose and stops publishing things nobody reviewed.
+refused on purpose and stops publishing things nobody asked for.
 
 ## Install
 
@@ -24,9 +24,9 @@ If your account reaches more than one club, every tool needs a `club_id`. Ask Cl
 |---|---|
 | `club-orientation` | before the first write. The tool map, the three rings, and what MCP will never do |
 | `seed-club-content` | importing or bulk-creating courses, recordings, tutorials, guides and agents |
-| `brand-a-club` | colours, logo, favicon, social card, through the gated design flow |
+| `brand-a-club` | colours, logo, favicon, social card, published in the same call |
 | `gate-club-access` | deciding what each access tier reaches |
-| `build-sales-funnel` | offers, coupons, a Sales page (blocks, a designed HTML page, or the club's own site) and its Funnel, each approved before it goes live |
+| `build-sales-funnel` | offers, coupons, a Sales page (blocks, a designed HTML page, or the club's own site) and its Funnel, live in the call the owner asks for |
 | `audit-club-content` | after an import or before a launch: what is invisible and why |
 | `tune-club-mentor` | making the club's AI assistant answer from the club's own material |
 
@@ -35,15 +35,16 @@ You can also name one: "use audit-club-content".
 
 ## What this cannot do, by design
 
-Prices, offers, coupons, trials and access tiers decide money and access, so they are written
-in two steps: a tool stages a draft, a preview shows the exact proposal, and only the owner's
-explicit approval applies it. Sales pages, Funnels and A/B tests publish through the same kind of
-single-use token. Nothing charges a member, and the payment terminal is connected by hand in the
-admin.
+Prices, offers, coupons, trials and access tiers decide money and access. A tool stages the
+change and `apply_commerce_changes` applies it, both in the same turn when the owner asked for it:
+the owner's request is the approval. There is no confirmation token and no second call, for these
+or for Sales pages, Funnels and A/B tests. Nothing charges a member, and the payment terminal is
+connected by hand in the admin. Two writes still wait for the owner: an email to real people needs
+their yes to the recipient count, and a migration import needs its plan approved in the admin.
 
 Feature flags are switched by the owner in the admin under "יכולות הקהילה". The navigation
-rail is edited in the admin as well. The home page's block list is a design change, previewed
-and published like colours.
+rail is edited in the admin as well. The home page's block list is a design change, published
+in the same call like colours.
 
 There are no repository, deploy, DNS or domain tools here, and the platform stores no
 corresponding credentials. Claude Code may already hold your own GitHub and Vercel sessions
@@ -72,9 +73,12 @@ obvious guess is wrong:
 Every call is written to the club's audit log with `source: "mcp"`, including failures and their
 arguments, with emails redacted. Ask Claude to "show the audit log" to see what any session did.
 
-Design changes cannot be published without a preview: `preview_design_change` returns a link a
-human opens and a single-use token that `publish_design` spends. The skills require showing you
-that link first.
+Design, commerce, Sales page and Funnel changes apply in the call that makes them:
+`preview_design_change` publishes despite its name and returns each field's old and new value. A
+tool that still receives `confirmation_token` refuses the call and names the retired argument. To
+undo, `rollback_sales_page` and `rollback_sales_funnel` restore an earlier version in one request;
+a design goes back by applying the previous values again or by reverting a version in the admin
+brand screen, and a commercial change by staging and applying the previous values.
 
 Member names, emails and phone numbers come back only from the member tools, such as
 `list_members` and `get_member`, which only the club's owner and admins can use. `get_member_stats`

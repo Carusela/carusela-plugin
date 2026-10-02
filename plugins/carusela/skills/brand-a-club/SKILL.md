@@ -1,34 +1,46 @@
 ---
 name: brand-a-club
-description: Change a Carusela club's colours, logo, favicon, apple icon and social share card through the gated design flow. Use when somebody wants to brand or rebrand their club, change its colours, upload a logo, or fix how it looks when shared.
+description: Change a Carusela club's colours, logo, favicon, apple icon and social share card. The Carusela MCP publishes a design change in the same call. Use when somebody wants to brand or rebrand their club, change its colours, upload a logo, or fix how it looks when shared.
 ---
 
 # Brand a club
 
 ## What this skill forbids
 
-**Never call `publish_design` without showing the human the preview first.**
+**Never publish design the owner did not ask for.** `preview_design_change` publishes in the
+call itself: the change is live for members when the result comes back. There is no token, no
+draft to approve and no second call. The owner asking for the change is the approval, so make the
+call in the same turn and send only the fields the request covers. When the request leaves the
+values open ("make it look warmer"), choosing them is part of the job; tell the owner which
+colours you chose and why.
 
-`preview_design_change` returns a `preview_url` and a single-use `confirmation_token`. The token
-exists so that a person sees the diff before members do. Staging and publishing in one breath
-because you are confident spends the token on a review that never happened, and turns a designed
-gate into a formality.
-
-Show the summary and the link. Then publish.
+**Never pass `confirmation_token`.** No tool takes it any more. A tool that receives it refuses
+the call and the refusal names the retired argument. Call again without it, after reading the
+current state.
 
 **Never put a colour or an asset through `update_club_copy`.** It refuses them and says where
 they belong. That refusal is the system working.
 
-## The two steps
+## One call
 
 ```
-preview_design_change  -> { changes, preview_url, confirmation_token, expires_at }
-publish_design         -> { published: true, version }
+get_config             -> what is live, an unpublished admin draft if one exists, home_blocks
+preview_design_change  -> { published, version, changes, summary, live_url, admin_url }
 ```
 
-The token is single-use, short-lived, and bound to the club, the account and the exact draft it
-was issued against. If it expires or somebody else saves a draft in between, preview again. Do
-not retry a spent token.
+Read `get_config` first, and keep that read: it is what you send back to undo.
+
+- **A pending admin draft goes live with your change.** If somebody saved an unpublished edit in
+  the admin brand or home screen, `get_config` shows it, and `preview_design_change` publishes it
+  together with your fields. Both appear in the same `changes`. Tell the owner which lines came
+  from the admin draft.
+- **Nothing to change answers `already_live`** and writes nothing, so a repeated call is safe.
+- **`publish_design` takes no argument.** It publishes a draft somebody saved in the admin brand
+  or home screen. Call it only when the owner asks for that admin draft to go live.
+
+There is no look-first mode for design over MCP: whatever `preview_design_change` receives goes
+live. An owner who wants to try a look before members see it saves a draft in the admin brand
+screen, and `publish_design` publishes it when they ask.
 
 ## Colours
 
@@ -95,13 +107,29 @@ obvious in the image.
 Refused here, with a real door elsewhere: tracking pixels and analytics ids (admin settings,
 ANALYTICS tab), the navigation rail (admin settings, CHROME tab), feature flags (admin,
 "יכולות הקהילה" tab), the mentor's avatar and its allowed link areas (brand editor, mentor
-section), and anything in Ring C, which has its own preview-and-approve flow.
+section), and anything in Ring C, which has its own tools (see `build-sales-funnel`).
 
 ## After publishing
 
-`get_config` shows the new `version` and the stored `brand.assets` and `tokens`. To see it
-truly live, load the club's own URL — the config is one thing and the rendered page is another,
-and a stale page is usually just a cache.
+The result's `changes` and `summary` name every field that moved, from what to what, and for
+`home_blocks` which blocks were added, removed or moved. Tell the owner all of it, including what
+came from a pending admin draft. `get_config` shows the new `version` and the stored
+`brand.assets` and `tokens`. To see it truly live, load `live_url`: the config is one thing and
+the rendered page is another, and a stale page is usually just a cache.
 
 The logged-out pages render in light mode regardless of the viewer's system setting, so the dark
 palette cannot be checked from there. Say that rather than claiming dark mode is verified.
+
+## Undo
+
+Every publish is a version. Two ways back:
+
+- **Call `preview_design_change` again with the old values.** For colours and assets, the
+  `changes` of the call you are undoing hold them. For `home_blocks`, send the whole list from the
+  `get_config` read you took before the change, because the diff is block by block and the field
+  replaces the list whole.
+- **Revert a version in the admin.** `admin_url` points at the screen that holds the version
+  history: the brand screen, or the home tab for a `home_blocks` change.
+
+There is no MCP rollback tool for design; one request back exists only for Sales pages and
+Funnels.

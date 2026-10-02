@@ -13,11 +13,13 @@ you write to it.
 
 **Never gate content you have not looked at.** Moving a lesson to level 2 takes it away from
 everyone below. That is a revenue decision wearing the clothes of a config change, and the owner
-makes it, not you. Propose the ladder, get agreement, then apply.
+makes it, not you. When the owner named the rung for the content, apply it. When they asked for a
+ladder without saying which content sits on which rung, ask them which rung; that is the decision
+itself, not a confirmation step.
 
 **Never claim you set up a subscription.** You did not. Gating content by tier is not the same
 as creating a product, a price or a plan. The second thing is Ring C, and it goes through its own
-staged, approved flow, described below.
+stage-then-apply tools, described below.
 
 ## Read the ladder first
 
@@ -70,12 +72,13 @@ cannot use what they bought, and support absorbs the difference.
 ## When somebody asks for a price, an offer or a new tier
 
 "Set up a subscription", "make this cost 200 shekels", "add a coupon", "start a trial": these are
-Ring C and they are written in two steps, never in one. Stage with `manage_membership_tier`,
-`manage_offer` or `manage_coupon`, show the person what `preview_commerce_changes` returns, and
-call `apply_commerce_changes` only after they approve that exact proposal. A new tier is not a
-rung of the ladder until it is applied, so gate content against it afterwards, not before. Check
-`get_commerce_readiness` before promising a paid offer: without a connected terminal it can be
-staged and cannot be sold.
+Ring C. Stage with `manage_membership_tier`, `manage_offer` or `manage_coupon`, then call
+`apply_commerce_changes` with the draft ids and revisions in the same turn: the owner's request is
+the approval, and the apply happens in that call. If the request leaves the price or the tier's
+level open, ask for it first. A new tier is not a rung of the ladder until it is applied, so gate
+content against it afterwards, not before. Check `get_commerce_readiness` before promising a paid
+offer: without a connected terminal it can be staged and cannot be sold. See `build-sales-funnel`
+for the fields.
 
 ## Verify
 
