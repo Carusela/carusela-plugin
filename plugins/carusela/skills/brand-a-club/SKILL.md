@@ -79,13 +79,36 @@ Five, all URLs that must come from `attach_media`:
 | `apple_icon` | iOS home screen | square PNG, 180px |
 | `og_image` | social share card | **1200x630 PNG** |
 
-Upload each one first:
+Upload each one first, through the two calls that strip the file's metadata, because a photo's
+GPS location would otherwise be public:
 
-1. `attach_media` `action: "upload_target"` with a filename
-2. PUT the bytes to `upload_url` with the correct `Content-Type`
-3. Use the returned `public_url` in `preview_design_change`
+1. `attach_media` `action: "stage_upload"` with a filename
+2. PUT the bytes to `upload_url` with the file's `Content-Type` (`image/png`, `image/jpeg`,
+   `image/gif` or `image/webp`; an SVG or a HEIC photo answers 415)
+3. `attach_media` `action: "finalize_upload"` with the `staged_path` from step 1, unchanged
+4. Use the `public_url` that finalize returns in `preview_design_change`, never before: nothing
+   is published until finalize succeeds
 
-Targets are single-use and expire, so request one per file, close to when you upload it.
+PNG, JPEG, GIF and WebP up to 5 MiB go this way. An SVG cannot be staged, so only an SVG uses
+`action: "upload_target"`, then the PUT, then its `public_url`. `upload_target` stores the file
+as sent, metadata included: never use it for anything else, and never to get past a refusal.
+
+Targets are single-use and expire, so stage one per file, close to when you upload it.
+
+`already_published: true` from finalize is a success: an earlier finalize published that file, so
+use its `public_url`. A refusal from finalize has already removed the staged copy, except where
+it says the read failed, so:
+
+- **larger than 5 MiB**, **not a PNG, JPEG, GIF or WebP image** (a HEIC photo or a PDF, whatever
+  its name says), **metadata could not be read**: shrink it, convert it, or re-export it as a
+  fresh PNG or JPEG, then start again at `stage_upload`. If a re-export fails the same way, tell
+  the owner which file and the reason after the colon.
+- **nothing staged at**: the PUT never landed or the target expired. Stage and PUT again.
+- **not a path stage_upload issued to you**: pass `staged_path` exactly as stage returned it.
+- **reading or downloading the staged upload failed**: the staged copy is still there. Call
+  `finalize_upload` again with the same `staged_path`.
+- **publishing the image to cms-images failed**: tell the owner the reason it gives. Stage again
+  only if that reason is temporary.
 
 `og_image` is the SEO card, **not the logo**. It carries the club name and the promise, sized
 for a link preview. Putting a bare logo there wastes the one image a share shows.

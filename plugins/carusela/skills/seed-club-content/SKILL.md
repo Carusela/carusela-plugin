@@ -100,9 +100,32 @@ recordings, tutorials and AI agents all resolve the poster frame from the provid
 lessons and recordings resolve the runtime too. A value you pass is never overwritten by that, so
 only pass one if you mean to override.
 
-To upload a file rather than reference a video: `attach_media` with `action: "upload_target"`,
-then PUT the bytes to the `upload_url` it returns with the right `Content-Type`, then use the
-`public_url`. The target is single-use and expires.
+To upload an image rather than reference a video, use the two calls that strip its metadata,
+because a photo's GPS location would otherwise be public: `attach_media` with
+`action: "stage_upload"` and a filename, then PUT the bytes to the `upload_url` it returns with
+the file's `Content-Type`, then `attach_media` with `action: "finalize_upload"` and the
+`staged_path` stage returned, unchanged. Put the `public_url` finalize returns on the row, and
+only then: nothing is published until finalize succeeds. The target is single-use and expires.
+
+This takes PNG, JPEG, GIF and WebP up to 5 MiB; the PUT answers 415 for an SVG or a HEIC photo.
+An SVG cannot be staged, so only an SVG uses `action: "upload_target"`, the PUT and its
+`public_url`. `upload_target` stores the file as sent, metadata included: never use it for
+anything else, and never to get past a refusal.
+
+`already_published: true` from finalize is a success: an earlier finalize published that file, so
+use its `public_url`. A refusal from finalize has already removed the staged copy, except where
+it says the read failed:
+
+- **larger than 5 MiB**, **not a PNG, JPEG, GIF or WebP image** (a HEIC photo or a PDF, whatever
+  its name says), **metadata could not be read**: shrink it, convert it, or re-export it as a
+  fresh PNG or JPEG, then start again at `stage_upload`. If a re-export fails the same way, put
+  the file and the reason after the colon in the report.
+- **nothing staged at**: the PUT never landed or the target expired. Stage and PUT again.
+- **not a path stage_upload issued to you**: pass `staged_path` exactly as stage returned it.
+- **reading or downloading the staged upload failed**: the staged copy is still there. Call
+  `finalize_upload` again with the same `staged_path`.
+- **publishing the image to cms-images failed**: report the reason it gives. Stage again only if
+  that reason is temporary.
 
 ## The four library kinds do not take the same fields
 

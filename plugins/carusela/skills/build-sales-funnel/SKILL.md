@@ -254,7 +254,8 @@ Then make it the draft's only block with `edit_sales_page_draft`:
 `customPage` entry in `get_landing_page_catalog` states as well:
 
 - One complete, self-contained, responsive HTML document, at most 256 KiB of UTF-8, with its own
-  `<style>` and `<script>`. Upload images with `attach_media` and use their `https` URLs.
+  `<style>` and `<script>`. Upload each image the way "Images for a page" below describes, and
+  use the `public_url` that `finalize_upload` returns.
 - A buy button carries `data-carusela-buy`, or is a link to `href="#carusela-buy"`. A click sends
   the buyer to this page's own Carusela checkout; nothing inside the page can charge.
 - A video slot is an element with `data-carusela-video="<YouTube, Vimeo or Bunny URL>"` and an
@@ -268,6 +269,23 @@ Then make it the draft's only block with `edit_sales_page_draft`:
   upload the new HTML and save the draft with the new hash.
 
 Uploading needs the `commerce` capability; editing the draft needs `content_edit`.
+
+**Images for a page.** Every image a designed Sales page, step or Thank You shows, and a share
+image you upload for `seo.ogImageUrl`, goes up through the two calls that strip its metadata,
+because a photo's GPS location would otherwise be public:
+
+```
+attach_media  { action: "stage_upload", filename }       -> staged_path, upload_url
+PUT upload_url  with the file's bytes and Content-Type   -> 200
+attach_media  { action: "finalize_upload", staged_path }  -> public_url
+```
+
+Pass `staged_path` unchanged, and put the `public_url` finalize returns into the page only then:
+nothing is published until finalize succeeds. `already_published: true` is a success, so use its
+`public_url`. This takes PNG, JPEG, GIF and WebP up to 5 MiB. An SVG cannot be staged, so only an
+SVG uses `action: "upload_target"`, the PUT and its `public_url`. `upload_target` stores the file
+as sent, metadata included: never use it for anything else, and never to get past a refusal.
+`attach_media` needs `content_edit`. Its refusals are in "Refusals and what they mean".
 
 Publishing:
 
@@ -442,6 +460,14 @@ keeps the live one. Pass a winner only when the owner named it.
 | nothing staged to publish, and the live version | a publish already consumed the draft, or none was ever saved | `get_sales_funnel` and `get_audit_log`; edit the draft only when the owner wants a change |
 | `legacy_document_not_representable` | the old two-offer document shape was sent for a Funnel with bumps or more than two steps | send `{ orderBumps, steps, thankYou }` |
 | a Sales page readiness code, such as `primary_offer_unpublished` or `landing_page_empty` | the page is not ready to publish | fix what it names; `get_sales_page` lists them all |
+| the PUT to a staged `upload_url` answers 415 | the staging bucket does not take that type (an SVG, a HEIC photo) | convert it to PNG or JPEG and stage again; an SVG goes through `upload_target` |
+| `finalize_upload`: larger than 5 MiB | the image is over the limit; the staged copy is gone | shrink it, then start again at `stage_upload` |
+| `finalize_upload`: not a PNG, JPEG, GIF or WebP image | the bytes are another format, whatever the name says (a HEIC photo, a PDF); the staged copy is gone | convert it to PNG or JPEG, then start again at `stage_upload` |
+| `finalize_upload`: the image's metadata could not be read | the file is damaged or unusual; nothing was published and the staged copy is gone | re-export it as a fresh PNG or JPEG and start again; if that fails too, tell the owner the reason after the colon |
+| `finalize_upload`: nothing staged at that path | the PUT never landed, or the target expired | check the PUT answered 200, then stage and PUT again |
+| `finalize_upload`: not a path stage_upload issued to you | the `staged_path` was changed | pass `staged_path` exactly as `stage_upload` returned it |
+| `finalize_upload`: reading or downloading the staged upload failed | a storage error; the staged copy is still there | call `finalize_upload` again with the same `staged_path` |
+| `finalize_upload`: publishing the image to cms-images failed | storage refused the clean image; the staged copy is gone | tell the owner the reason it gives; stage again only if it is temporary |
 
 Every call, refused or not, lands in `get_audit_log` with `source: "mcp"`.
 
