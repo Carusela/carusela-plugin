@@ -42,6 +42,31 @@ page"). A designed page is the draft's only block. A Funnel is a list of Order b
 list of steps and a Thank You; the server derives the graph, the node ids and whether each step
 is an Upsell or a Downsell.
 
+**Never draw buy, decline or price controls into a Funnel step's or the Thank You's HTML.**
+Carusela draws the price, the terms and the only accept and decline buttons on every Upsell and
+Downsell step; on a designed step they sit on Carusela's bar under the page, and only that bar can
+charge the buyer or move them on. A button drawn inside the page does nothing and puts a second,
+dead set of buttons above the real ones. The owner's wording for the two buttons goes in the
+step's `content.acceptLabel` and `content.declineLabel`. The Sales page is the opposite case: there
+the buy buttons are yours to draw and mark (see "A designed page").
+
+**Never replace the Thank You's way into the course.** The button on the Thank You takes the buyer
+into what they just bought. Leave `thankYou.nextAction` out unless the owner named another
+destination, because a `nextAction` replaces that link. On a designed Thank You the button stays
+on Carusela's bar, so the HTML draws no course button or link of its own: a link inside the page
+opens a new tab that keeps the page's sandbox and has no member session, so it cannot take the
+buyer into the course.
+
+**Never show the owner a page from a copy on their machine.** Look at every page inside Carusela
+and send the owner there: the Sales page at its `admin_url` (from `get_sales_page` or
+`preview_sales_page`; null while the club has no address yet) and at its `entry_url` once it is
+live, and every step and the Thank You in the Funnel editor's preview at `admin_path` (from
+`get_sales_funnel` or `preview_sales_funnel`), a path on the club's own address that shows the
+saved draft, so save with `edit_sales_funnel_draft` first. Never open the HTML as a local file or
+serve it from a local port to check it or to show it. A local copy has nothing Carusela adds
+around the page: no bar, so a step looks as if its buy and decline buttons are missing when they
+are not, and on a Sales page no checkout behind the buy buttons and no video player.
+
 **Never send half a document.** Both `edit_sales_page_draft` and `edit_sales_funnel_draft`
 replace the whole draft. A step whose `content` you leave out loses its authored copy, and an
 empty `steps` list removes every step. Read first, change what you mean to change, send all of it.
@@ -67,6 +92,10 @@ get_landing_page_catalog  -> the closed block vocabulary a page is built from
 All read-only. `get_commerce_catalog` pages with `offset` and `limit` (up to 100).
 
 ## The flow
+
+A request for a funnel is one run through the steps below: you write every page and all of the
+copy, and stop only for a value the request left open, such as a price, asked once for all of them
+rather than step by step.
 
 Hebrew is the club's language. Every word a buyer reads (offer names, headings, button labels,
 the Thank You) is written in Hebrew unless the owner says otherwise.
@@ -291,13 +320,15 @@ The draft is `{ orderBumps, steps, thankYou }`:
   site or an `https` address. Without a `nextAction`, the button leads to what was bought: the
   course for a course purchase, the club home for a member tier.
 
-**A designed step or Thank You.** Upload the owner's HTML with `save_sales_funnel_page` (the same
-rules and the same `page_id` as a designed Sales page) and put the returned hash on the step's
-`content.pageSha256` or on `thankYou.pageSha256`, keeping every other field of the draft. The page
-is shown in the same sandbox above a fixed Carusela bar: on a step the bar carries the price, the
-terms and the only accept and decline buttons; on the Thank You it carries the receipt and the next
-action. A buy button inside the owner's HTML does nothing there, so do not tell the owner it will.
-A hash this club never stored is refused with `page_not_found`.
+**A designed step or Thank You.** Write the page yourself, or take the HTML the owner gives you,
+upload it with `save_sales_funnel_page` (the same `page_id`, size limit and sandbox as a designed
+Sales page) and put the returned hash on the step's `content.pageSha256` or on
+`thankYou.pageSha256`, keeping every other field of the draft. The page is shown above a fixed
+Carusela bar: on a step the bar carries the price, the terms and the accept and decline buttons; on
+the Thank You it carries the receipt and the button into the purchase. Design the page with that
+bar under it, with no buy, decline, price or course controls of its own (see "What this skill
+forbids"). A step or Thank You page gets no video player, so it carries no `data-carusela-video`
+slot. A hash this club never stored is refused with `page_not_found`.
 
 **Upsell or Downsell is derived, not chosen.** A step reached only by declines is a Downsell;
 every other step is an Upsell. Arrange `onAccept` and `onDecline` to get the shape the owner
@@ -405,7 +436,8 @@ Every call, refused or not, lands in `get_audit_log` with `source: "mcp"`.
 Read back, do not trust the receipt alone: `get_sales_page` for the published version and
 `readiness.activate`, `get_sales_funnel` for the live version. Tell the owner what is live, what
 a buyer meets on each branch, and what still stands between the page and its first buyer, most
-often the CardCom connection or the club's launch.
+often the CardCom connection or the club's launch. When they want to look, send them to the live
+page's `entry_url`, never to a copy on their machine.
 
 What happens after payment is not configured here. A buyer who had no account is signed in
 automatically in the browser that paid, and still receives the access email. An existing member
