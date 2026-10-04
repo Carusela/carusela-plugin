@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Run a Carusela club from Claude Code: the MCP connection plus the skills that keep an agent inside what the surface actually allows",
-    "version": "1.6.1"
+    "version": "1.6.2"
   },
   "plugins": [
     {
       "name": "carusela",
       "source": "./plugins/carusela",
       "description": "Connects the Carusela MCP and adds seven skills: orientation, seeding content, branding, access tiers, sales pages and funnels, auditing and the AI mentor",
-      "version": "1.6.1",
+      "version": "1.6.2",
       "category": "productivity",
       "tags": ["carusela", "club", "mcp", "courses", "hebrew", "membership"]
     }

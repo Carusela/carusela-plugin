@@ -307,8 +307,17 @@ every published version. `expected_draft_revision` is null when the page has no 
 
 The draft is `{ orderBumps, steps, thankYou }`:
 
-- `orderBumps`: 0 to 3 entries of `{ offerId, headline?, body? }`. A bump is paid inside the
-  checkout, in the same charge as the primary offer.
+- `orderBumps`: 0 to 3 entries of `{ offerId, headline?, body?, control?, showImage?,
+  showPercent? }` when the primary offer is a one-time course offer, and 0 or 1 entry when it is
+  a member tier offer billed monthly or yearly. A bump is paid inside the checkout, in the same
+  charge as the primary offer. On a tier it is charged once, with the first charge (the first
+  period, the trial verification charge, or on its own when the trial charges nothing), and never
+  on a renewal. `headline` is up to 200 characters and `body` up to 2000. `control` is how the
+  buyer adds the bump: `"button"`, `"checkbox"` or `"switch"`, default `"button"`. `showImage`
+  shows the course picture and `showPercent` shows the saving as a percentage when there is one,
+  both default true. A bump with none of `control`, `showImage` and `showPercent` keeps the
+  earlier card (the offer name, the headline and up to three body lines as bullets); set
+  `control` to draw the newer card.
 - `steps`: 0 to 12 entries of `{ id, offerId, content?, onAccept, onDecline }`, in the order a
   buyer meets them. `id` matches `^[a-z0-9-]{1,40}$`. `onAccept` and `onDecline` are another
   step's id or `"thank_you"`, never the step's own id, and no arrangement may let a buyer reach
@@ -341,11 +350,16 @@ wants, then check the kinds in the preview.
   offer's own order bump and not one of this Funnel's Order bumps. The same offer on two steps is
   refused. `list_funnel_followup_offers` returns exactly the offers a step may use, with their
   real publication flags; pick from it.
-- An Order bump needs a primary offer that is a one-time course offer. The bump itself is a
-  one-time course offer that costs more than 0, is not the primary offer, is not any step's offer
-  and is not listed twice. When the primary offer allows instalments, the bump must allow
-  instalments too, with a maximum at least as high. `list_funnel_followup_offers` with
-  `role: "order_bump"` returns exactly the offers that pass these rules.
+- An Order bump needs a primary offer that is either a one-time course offer, which takes up to
+  3 bumps, or a member tier offer billed monthly or yearly, which takes 1. Any other primary
+  takes none. The bump itself is a one-time course offer that costs more than 0, is not the
+  primary offer, is not any step's offer and is not listed twice. When the primary offer allows
+  instalments, the bump must allow instalments too, with a maximum at least as high. A tier offer
+  never allows instalments (see the offer fields above), so this asks nothing of a tier's bump.
+  `list_funnel_followup_offers` with `role: "order_bump"` returns exactly the offers that pass
+  these rules for this page's primary offer, and none when the primary takes no bump. It ignores
+  the bump count: on a tier it still lists every eligible offer, and a second bump is refused as
+  `max_bumps_exceeded`.
 - Unpublished offers may sit in a draft. Publication needs them published.
 
 Check a candidate with `preview_sales_funnel` before you save it. It writes nothing and returns
@@ -418,11 +432,11 @@ keeps the live one. Pass a winner only when the owner named it.
 | `request_id` already belongs to a different draft | the id was reused for a different request | reuse the original request unchanged, or pick a new id |
 | slug already belongs to another Sales page | the slug is taken | choose another |
 | `followup_offer_unavailable` on `steps` | that offer cannot be a step | pick from `list_funnel_followup_offers` |
-| `order_bump_primary_incompatible` | the primary offer is not a one-time course offer | remove the bumps or change the primary offer |
+| `order_bump_primary_incompatible` | the primary offer is neither a one-time course offer nor a member tier offer billed monthly or yearly | remove the bumps or change the primary offer |
 | `order_bump_instalments_incompatible` | the bump allows fewer instalments than the primary offer | stage the bump offer with enough instalments, or pick another |
-| `order_bump_offer_unavailable` | the bump offer fails the bump rules | pick another one-time course offer |
+| `order_bump_offer_unavailable` | the bump offer fails the bump rules: it is not a one-time course offer that costs more than 0, or it is the primary offer or a step's offer | pick from `list_funnel_followup_offers` with `role: "order_bump"` |
 | `duplicate_step_offer`, `step_self_target`, `step_target_unknown`, `step_target_cycle` | the step list cannot be walked | fix the ids and targets |
-| `max_steps_exceeded`, `max_bumps_exceeded` | more than 12 steps or 3 bumps | trim |
+| `max_steps_exceeded`, `max_bumps_exceeded` | more than 12 steps, or more than 3 bumps (more than 1 on a monthly or yearly tier primary) | trim |
 | `page_not_found` | a `pageSha256` this club never uploaded | `save_sales_funnel_page` first, then use the hash it returns |
 | `funnel_products_unpublished` | an offer or product in the Funnel is unpublished | apply the commerce changes first, or publish through the commerce batch |
 | nothing staged to publish, and the live version | a publish already consumed the draft, or none was ever saved | `get_sales_funnel` and `get_audit_log`; edit the draft only when the owner wants a change |
