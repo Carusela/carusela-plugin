@@ -5,6 +5,10 @@ description: Write and design a Carusela Sales page, Upsell, Downsell or Thank Y
 
 # Write and design pages for Carusela
 
+The plugin is optional for an assistant connected directly through MCP. Use the platform workflow
+instructions actually returned by `get_landing_page_catalog` and the method index's allowed guide
+files when the public plugin skills are unavailable; do not install a plugin automatically.
+
 Use the customer's local files, CLAUDE.md and brief to understand the business. Read the product,
 offer and brand from Carusela as `build-sales-funnel` describes. The customer's Claude Code does
 the writing and design; fetching the method does not start a separate model in Carusela.
@@ -60,7 +64,10 @@ local screenshot nor an automated gate proves those integrations work.
 ## Save a truthful draft, then review it in Carusela
 
 Follow `build-sales-funnel` for sanitized images, the HTML upload, complete draft documents,
-revision checks, preview links and publication. Preserve its sandbox and page-size rules.
+revision checks, preview links and publication. For Funnel-only publication, use
+`publish_sales_funnel` with `publish_page: false`; its default also publishes the page. Read both
+publication receipts and current states, and report partial success accurately. Preserve the
+sandbox and page-size rules. Confirm paid-offer readiness includes the owner's support email.
 Keep the club's checkout authoritative. Sales buy links use Carusela's markers; funnel steps and
 the Thank You draw no duplicate purchase, decline, price or course-access controls.
 
