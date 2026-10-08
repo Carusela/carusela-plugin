@@ -72,8 +72,8 @@ The recurring questions are not a block here. They are the FAQ below.
 
 The questions members actually ask, each with the club's own answer. This is the highest-value
 part of a mentor and the one most people skip. Pull the questions from real sources: a Q&A
-recording, material the owner hands you, the questions in a community feed. Do not open a
-mailbox or member messages yourself. Then **rewrite each one** into a clean question and an
+recording, material the owner hands you, questions the owner copies from a community feed. Do
+not open a mailbox or member messages yourself. Then **rewrite each one** into a clean question and an
 answer the club stands behind. Never paste a raw thread.
 
 How an entry reaches a member:
