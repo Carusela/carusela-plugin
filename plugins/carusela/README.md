@@ -1,6 +1,6 @@
 # Carusela for Claude Code
 
-Run your club from Claude Code. This plugin connects the Carusela MCP and adds seven skills that
+Run your club from Claude Code. This plugin connects the Carusela MCP and adds eight skills that
 keep an agent inside what the surface actually allows, so it stops guessing at fields that are
 refused on purpose and stops publishing things nobody asked for.
 
@@ -27,6 +27,7 @@ If your account reaches more than one club, every tool needs a `club_id`. Ask Cl
 | `brand-a-club` | colours, logo, favicon, social card, published in the same call |
 | `gate-club-access` | deciding what each access tier reaches |
 | `build-sales-funnel` | offers, coupons, a Sales page (blocks, a designed HTML page, or the club's own site) and its Funnel, live in the call the owner asks for |
+| `write-sales-pages` | writing and designing Sales, Upsell, Downsell and Thank You pages with the private guidance served through Carusela MCP |
 | `audit-club-content` | after an import or before a launch: what is invisible and why |
 | `tune-club-mentor` | making the club's AI assistant answer from the club's own material |
 
@@ -67,6 +68,14 @@ obvious guess is wrong:
 - **The four library kinds have different create defaults.** A guide and an AI agent go live the
   moment they are created; a recording and a tutorial start as drafts. All four accept
   `is_published` on create, so staging a batch nobody has reviewed means passing it explicitly.
+
+## Private page guidance
+
+`write-sales-pages` fetches licensed instructions from Carusela for an eligible club. The
+customer's Claude Code uses their local business context to write the page. The private method is
+not bundled in this public plugin. Responses still reach the customer's client and can remain in
+session history; access control does not make them impossible to copy. Drafts and previews stay
+in Carusela, and publication follows the owner's request.
 
 ## Safety
 

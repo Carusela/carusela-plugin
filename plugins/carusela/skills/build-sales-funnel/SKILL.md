@@ -62,10 +62,10 @@ and send the owner there: the Sales page at its `admin_url` (from `get_sales_pag
 `preview_sales_page`; null while the club has no address yet) and at its `entry_url` once it is
 live, and every step and the Thank You in the Funnel editor's preview at `admin_path` (from
 `get_sales_funnel` or `preview_sales_funnel`), a path on the club's own address that shows the
-saved draft, so save with `edit_sales_funnel_draft` first. Never open the HTML as a local file or
-serve it from a local port to check it or to show it. A local copy has nothing Carusela adds
-around the page: no bar, so a step looks as if its buy and decline buttons are missing when they
-are not, and on a Sales page no checkout behind the buy buttons and no video player.
+saved draft, so save with `edit_sales_funnel_draft` first. Automated HTML measurements from
+`write-sales-pages` may open a local file or use an isolated local server. Never use a local copy
+as the owner's preview or as proof of checkout, video or funnel-bar behavior: it has none of
+Carusela's integrations. Check those inside Carusela after saving the draft.
 
 **Never send half a document.** Both `edit_sales_page_draft` and `edit_sales_funnel_draft`
 replace the whole draft. A step whose `content` you leave out loses its authored copy, and an
@@ -243,7 +243,8 @@ ordinary buyer's click is not detected on its own.
 #### A designed page
 
 When the owner wants their own design rather than blocks (a long page, their own layout, many
-images), write one HTML page and upload it:
+images), load `write-sales-pages` with `page_type: "sales"` before writing it. Fetch the
+private method through MCP, then return here to upload one HTML page:
 
 ```
 save_sales_funnel_page  { page_id, html }  -> page_sha256
@@ -347,8 +348,11 @@ The draft is `{ orderBumps, steps, thankYou }`:
   site or an `https` address. Without a `nextAction`, the button leads to what was bought: the
   course for a course purchase, the club home for a member tier.
 
-**A designed step or Thank You.** Write the page yourself, or take the HTML the owner gives you,
-upload it with `save_sales_funnel_page` (the same `page_id`, size limit and sandbox as a designed
+**A designed step or Thank You.** Before authoring the page, load `write-sales-pages` with
+`page_type: "upsell"`, `"downsell"` or `"thank_you"`, matching the page. A Thank You uses shared
+design guidance and keeps Carusela's receipt and purchase-access action; it does not borrow an
+Upsell or Downsell copy framework. Write the page, or take the HTML the owner gives you,
+then upload it with `save_sales_funnel_page` (the same `page_id`, size limit and sandbox as a designed
 Sales page) and put the returned hash on the step's `content.pageSha256` or on
 `thankYou.pageSha256`, keeping every other field of the draft. The page is shown above a fixed
 Carusela bar: on a step the bar carries the price, the terms and the accept and decline buttons; on
