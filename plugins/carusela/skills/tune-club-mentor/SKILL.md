@@ -15,8 +15,9 @@ anyone who can read the config.
 
 **Never put questions and answers in `mentor_instructions`.** The same reason: it is public, and
 it is sent to the model on every answer. Recurring questions and the club's answers go in the
-mentor FAQ (`manage_mentor_faq`), which members never read and which the mentor quotes only when
-a question matches.
+mentor FAQ (`manage_mentor_faq`), which the mentor quotes only when a question matches. Visitors
+who are not signed in cannot read it; a signed-in member can get the full text of any entry the
+mentor could quote to them, so write every entry as something the club would say to that member.
 
 **Never put a member's or customer's name or details in an FAQ entry.** An entry is the club's
 answer, spoken to every member who asks something close to it. Write it as the club's position,
@@ -71,13 +72,15 @@ The recurring questions are not a block here. They are the FAQ below.
 
 The questions members actually ask, each with the club's own answer. This is the highest-value
 part of a mentor and the one most people skip. Pull the questions from real sources: a Q&A
-recording, a support inbox, the questions in a community feed. Then **rewrite each one** into a
-clean question and an answer the club stands behind. Never paste a raw thread.
+recording, material the owner hands you, the questions in a community feed. Do not open a
+mailbox or member messages yourself. Then **rewrite each one** into a clean question and an
+answer the club stands behind. Never paste a raw thread.
 
 How an entry reaches a member:
 
-- Members never see the list. The mentor quotes an entry's answer as the club's position when a
-  member asks something close to its question.
+- The mentor quotes an entry's answer as the club's position when a member asks something close
+  to its question. Visitors who are not signed in cannot read the FAQ; a signed-in member can get
+  the full text of any entry the mentor could quote to them.
 - `min_tier_level` holds an entry back from members below that access level (0 is everyone).
 - `content_type` with `content_id` links an entry to a lesson, recording, course, tutorial or
   guide: the mentor quotes it only to members who can open that content, and can point to it.
