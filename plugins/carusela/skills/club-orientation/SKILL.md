@@ -121,9 +121,11 @@ for.
 hand in the admin payments tab, `/admin?tab=payments`, and the terminal credentials never pass
 through MCP. `get_commerce_readiness` says where the club stands: `ready`, `not_connected`,
 `not_synchronized` or `unknown`. Drafts can be prepared in every state; `can_publish_paid_offers`
-is true only when the status is `ready`. Read it before promising anybody a paid offer, and when
-it is not ready, send the owner to the payments tab rather than looking for another way. Nothing
-in Ring C charges a member or refunds one.
+requires both `status: "ready"` and `support_email_set: true`. Missing terminal readiness belongs
+in the payments tab. A missing support email needs an address the owner names or confirms:
+`update_club_copy { links: { supportEmail } }` or `/admin?tab=contact`. Never publish the sign-in
+email as a support address without confirmation. An unknown support-email check gets a retry,
+not permission to sell. Nothing in Ring C charges a member or refunds one.
 
 Sales pages and Funnels sit on top of Ring C. Each publishes in one call and rolls back in one
 call, or a Sales page and its saved Funnel draft can go live inside the same commercial batch. See

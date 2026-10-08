@@ -30,7 +30,7 @@ The connection on its own gives Claude the tools. It does not tell Claude how th
 shaped, so it guesses, and several of the natural guesses are quietly wrong: content created live
 when you wanted a draft, a category that looks attached and is not, a tier that does not exist.
 
-The seven skills are the part that stops that.
+The eight skills are the part that stops that.
 
 | skill | what it is for |
 |---|---|
@@ -39,6 +39,7 @@ The seven skills are the part that stops that.
 | `brand-a-club` | colours, logo, favicon and social card, published in the call you ask for them |
 | `gate-club-access` | what each access tier reaches |
 | `build-sales-funnel` | offers, coupons, a sales page (blocks, your own designed HTML page, or your own site) and its funnel, live when you ask for them and one request away from the previous version |
+| `write-sales-pages` | writing and designing Sales, Upsell, Downsell and Thank You pages with the private guidance served through Carusela MCP |
 | `audit-club-content` | what got created successfully and is still invisible |
 | `tune-club-mentor` | making the club's AI assistant answer from your own material |
 
@@ -63,6 +64,14 @@ edited in the admin as well. Claude does neither.
 There are no repository, deploy, DNS or domain tools here, and Carusela stores no such
 credentials. Claude Code may already hold your own GitHub and Vercel sessions on your machine;
 those never enter this connection.
+
+## Private page guidance
+
+`write-sales-pages` fetches licensed instructions from Carusela for an eligible club. The
+customer's Claude Code uses their local business context to write the page. The private method is
+not bundled in this public plugin. Responses still reach the customer's client and can remain in
+session history; access control does not make them impossible to copy. Drafts and previews stay
+in Carusela, and publication follows the owner's request.
 
 ## Safety
 

@@ -29,7 +29,9 @@ what the first one already did: `already_live`, "nothing staged to publish", a d
 staged at that revision, a test that is already running. Read `get_audit_log` and the current
 state; act again only when the owner wants a further change.
 
-**Never promise a buyer can pay before `get_commerce_readiness` says `ready`.** The club's
+**Never promise a buyer can pay before `get_commerce_readiness` returns
+`can_publish_paid_offers: true`.** `status: "ready"` checks the terminal, not the required support
+email. The club's
 CardCom terminal is connected by a person, by hand, at `/admin?tab=payments`. Never ask for
 terminal credentials and never send them through MCP. Everything in this skill can be drafted
 while the terminal is missing; nobody can pay until it is connected.
@@ -50,22 +52,23 @@ dead set of buttons above the real ones. The owner's wording for the two buttons
 step's `content.acceptLabel` and `content.declineLabel`. The Sales page is the opposite case: there
 the buy buttons are yours to draw and mark (see "A designed page").
 
-**Never replace the Thank You's way into the course.** The button on the Thank You takes the buyer
-into what they just bought. Leave `thankYou.nextAction` out unless the owner named another
-destination, because a `nextAction` replaces that link. On a designed Thank You the button stays
-on Carusela's bar, so the HTML draws no course button or link of its own: a link inside the page
-opens a new tab that keeps the page's sandbox and has no member session, so it cannot take the
-buyer into the course.
+**Never duplicate the Thank You's way into the course.** For a paid primary course purchase,
+Carusela keeps the course-access button. `thankYou.nextAction` adds a second action, or uses one
+button with its label when its href is that same `/courses/<id>` destination. For other primary
+purchases, `nextAction` replaces the way back to the club. Leave it out unless the owner named
+another destination. On a designed Thank You these actions stay on Carusela's bar, so the HTML
+draws no course button or link of its own: a link inside the page opens a new tab that keeps the
+page's sandbox and has no member session.
 
 **Never show the owner a page from a copy on their machine.** Look at every page inside Carusela
 and send the owner there: the Sales page at its `admin_url` (from `get_sales_page` or
 `preview_sales_page`; null while the club has no address yet) and at its `entry_url` once it is
 live, and every step and the Thank You in the Funnel editor's preview at `admin_path` (from
 `get_sales_funnel` or `preview_sales_funnel`), a path on the club's own address that shows the
-saved draft, so save with `edit_sales_funnel_draft` first. Never open the HTML as a local file or
-serve it from a local port to check it or to show it. A local copy has nothing Carusela adds
-around the page: no bar, so a step looks as if its buy and decline buttons are missing when they
-are not, and on a Sales page no checkout behind the buy buttons and no video player.
+saved draft, so save with `edit_sales_funnel_draft` first. Automated HTML measurements from
+`write-sales-pages` may open a local file or use an isolated local server. Never use a local copy
+as the owner's preview or as proof of checkout, video or funnel-bar behavior: it has none of
+Carusela's integrations. Check those inside Carusela after saving the draft.
 
 **Never send half a document.** Both `edit_sales_page_draft` and `edit_sales_funnel_draft`
 replace the whole draft. A step whose `content` you leave out loses its authored copy, and an
@@ -105,13 +108,18 @@ the Thank You) is written in Hebrew unless the owner says otherwise.
 `get_commerce_readiness` returns `status`: `ready`, `not_connected` (connect CardCom in the
 payments tab), `not_synchronized` (connected, but the club's selling state is out of step; check
 the existing connection in the admin) or `unknown` (the check could not be completed; retry it).
-`can_prepare_drafts` is always true. `can_publish_paid_offers` is true only when `ready`.
+`can_prepare_drafts` is always true. `can_publish_paid_offers` requires both `status: "ready"`
+and `support_email_set: true`. If the support email is missing, ask which address buyers should
+use for support and cancellation. Set `update_club_copy { links: { supportEmail } }` only after
+the owner names or confirms it, or send them to `/admin?tab=contact`. Never assume their sign-in
+email is the support address. If `support_email_set` is null, retry the readiness check; an
+unknown value does not permit selling.
 
 Publishing a page is not the same as the page taking buyers. `get_sales_page` returns `readiness`
 with two parts. `publish` is what a publish needs: a valid, non-empty page document and a primary
 offer that exists, is published and fits the page. `activate` is what a buyer reaching it needs
-on top of that: the page published, the club's CardCom terminal connected, a Funnel with a live
-version (a Thank You at least) and the club launched. Tell the owner which of these are still open.
+on top of that: the page published, the club's CardCom terminal connected, the required support
+email, a Funnel with a live version (a Thank You at least) and the club launched. Tell the owner which of these are still open.
 
 ### 2. The product
 
@@ -243,7 +251,8 @@ ordinary buyer's click is not detected on its own.
 #### A designed page
 
 When the owner wants their own design rather than blocks (a long page, their own layout, many
-images), write one HTML page and upload it:
+images), load `write-sales-pages` with `page_type: "sales"` before writing it. Fetch the
+private method through MCP, then return here to upload one HTML page:
 
 ```
 save_sales_funnel_page  { page_id, html }  -> page_sha256
@@ -315,7 +324,7 @@ get_sales_funnel             { page_id }
 list_funnel_followup_offers  { page_id, role?, page?, limit?, query? }
 edit_sales_funnel_draft      { page_id, expected_draft_revision, expected_live_version, draft }
 preview_sales_funnel         { page_id, expected_draft_revision, expected_live_version, draft }
-publish_sales_funnel         { page_id }
+publish_sales_funnel         { page_id, publish_page? }
 rollback_sales_funnel        { page_id, target_version }
 ```
 
@@ -344,11 +353,16 @@ The draft is `{ orderBumps, steps, thankYou }`:
   3600 seconds. A field left out falls back to copy derived from the offer.
 - `thankYou`: `{ heading, body?, nextAction?, pageSha256? }`. `heading` up to 200 characters,
   `body` up to 2000, and `nextAction` is `{ label, href }` where `href` is a path on the club's
-  site or an `https` address. Without a `nextAction`, the button leads to what was bought: the
-  course for a course purchase, the club home for a member tier.
+  site or an `https` address. For a paid primary course purchase, the course button remains:
+  `nextAction` adds a second button, or coalesces into one with its label when the href is the
+  same course page. For other primary purchases it replaces the club-home action. Without it,
+  Carusela supplies the normal purchase-access action.
 
-**A designed step or Thank You.** Write the page yourself, or take the HTML the owner gives you,
-upload it with `save_sales_funnel_page` (the same `page_id`, size limit and sandbox as a designed
+**A designed step or Thank You.** Before authoring the page, load `write-sales-pages` with
+`page_type: "upsell"`, `"downsell"` or `"thank_you"`, matching the page. A Thank You uses shared
+design guidance and keeps Carusela's receipt and purchase-access action; it does not borrow an
+Upsell or Downsell copy framework. Write the page, or take the HTML the owner gives you,
+then upload it with `save_sales_funnel_page` (the same `page_id`, size limit and sandbox as a designed
 Sales page) and put the returned hash on the step's `content.pageSha256` or on
 `thankYou.pageSha256`, keeping every other field of the draft. The page is shown above a fixed
 Carusela bar: on a step the bar carries the price, the terms and the accept and decline buttons; on
@@ -385,12 +399,20 @@ what each Order bump state charges at checkout and, for every step, its derived 
 accepting and declining lead, the amount, the access it grants and the consequences. Then save
 with `edit_sales_funnel_draft`.
 
-When the owner asked for the Funnel to go live, `publish_sales_funnel` publishes the **saved**
-draft as a new version in the same turn. It reads the draft's bindings itself, so a draft or an
-Offer that moves during the call refuses and nothing is published. It refuses while `repairs` is
-not empty and when an offer or product in the Funnel is still unpublished. A publish consumes the
-draft, so a repeat finds nothing staged and says which version is live. Then tell the owner what a
-buyer meets on both branches of every step.
+When the owner asks for the Funnel and page to go live, `publish_sales_funnel` publishes the
+**saved** Funnel and Sales page; `publish_page` defaults to true. For Funnel-only work, explicitly
+pass `publish_page: false` to keep page edits private. It checks page readiness and capabilities
+before writes, reads the Funnel's bindings itself, and refuses non-empty `repairs` or unpublished
+Funnel products. External pages publish their entry record, not the remote website.
+
+Read the separate `funnel` and `page` receipts, then `get_sales_funnel` and `get_sales_page`.
+An error with `failed_step: "sales_page"` can leave the Funnel published while page publication
+failed: report that partial result. Resolve the named page failure and retry with
+`publish_page: true`; this can complete the page without restaging the consumed Funnel or adding
+another Funnel version. Never claim both succeeded from the Funnel receipt alone. A returned
+`public_url` describes a verified reachable hosted page; it is not supplied for an unreachable
+page or proof of an external site's deployment. Tell the owner what buyers actually meet on
+both branches and which page or activation steps remain open.
 
 When the owner wants to walk the saved draft before it goes live, `confirm_sales_funnel_publish
 { page_id }` returns exactly what the publish would put live, both branches included, and writes
@@ -459,6 +481,7 @@ keeps the live one. Pass a winner only when the owner named it.
 | `funnel_products_unpublished` | an offer or product in the Funnel is unpublished | apply the commerce changes first, or publish through the commerce batch |
 | nothing staged to publish, and the live version | a publish already consumed the draft, or none was ever saved | `get_sales_funnel` and `get_audit_log`; edit the draft only when the owner wants a change |
 | `legacy_document_not_representable` | the old two-offer document shape was sent for a Funnel with bumps or more than two steps | send `{ orderBumps, steps, thankYou }` |
+| `support_email_missing` or `commerce_support_email_required` | no confirmed support/cancellation email | ask the owner for the address; set `links.supportEmail` or use `/admin?tab=contact`, then recheck readiness |
 | a Sales page readiness code, such as `primary_offer_unpublished` or `landing_page_empty` | the page is not ready to publish | fix what it names; `get_sales_page` lists them all |
 | the PUT to a staged `upload_url` answers 415 | the staging bucket does not take that type (an SVG, a HEIC photo) | convert it to PNG or JPEG and stage again; an SVG goes through `upload_target` |
 | `finalize_upload`: larger than 5 MiB | the image is over the limit; the staged copy is gone | shrink it, then start again at `stage_upload` |
