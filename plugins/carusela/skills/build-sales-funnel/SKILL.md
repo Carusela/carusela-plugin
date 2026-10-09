@@ -284,16 +284,18 @@ image you upload for `seo.ogImageUrl`, goes up through the two calls that strip 
 because a photo's GPS location would otherwise be public:
 
 ```
-attach_media  { action: "stage_upload", filename }       -> staged_path, upload_url
-PUT upload_url  with the file's bytes and Content-Type   -> 200
+attach_media  { action: "stage_upload", filename, image_surface }  -> staged_path, upload_url, upload_headers?
+PUT upload_url  with the bytes and upload_headers, or the file's Content-Type  -> 200
 attach_media  { action: "finalize_upload", staged_path }  -> public_url
 ```
 
+`image_surface` is `landing_image` for an image in the page and `og_image` for `seo.ogImageUrl`.
 Pass `staged_path` unchanged, and put the `public_url` finalize returns into the page only then:
 nothing is published until finalize succeeds. `already_published: true` is a success, so use its
-`public_url`. This takes PNG, JPEG, GIF and WebP up to 5 MiB. An SVG cannot be staged, so only an
-SVG uses `action: "upload_target"`, the PUT and its `public_url`. `upload_target` stores the file
-as sent, metadata included: never use it for anything else, and never to get past a refusal.
+`public_url`. This takes PNG, JPEG, GIF, WebP and vector SVG up to 5 MiB. An SVG needs a filename
+ending in `.svg`: stage then returns `upload_headers: {"Content-Type": "text/plain"}`, which the
+PUT must send. Finalize parses the SVG and publishes plain vector markup only. `upload_target`
+is disabled: it refuses with "upload_target is disabled" and names these same steps.
 `attach_media` needs `content_edit`. Its refusals are in "Refusals and what they mean".
 
 Publishing:
@@ -483,10 +485,13 @@ keeps the live one. Pass a winner only when the owner named it.
 | `legacy_document_not_representable` | the old two-offer document shape was sent for a Funnel with bumps or more than two steps | send `{ orderBumps, steps, thankYou }` |
 | `support_email_missing` or `commerce_support_email_required` | no confirmed support/cancellation email | ask the owner for the address; set `links.supportEmail` or use `/admin?tab=contact`, then recheck readiness |
 | a Sales page readiness code, such as `primary_offer_unpublished` or `landing_page_empty` | the page is not ready to publish | fix what it names; `get_sales_page` lists them all |
-| the PUT to a staged `upload_url` answers 415 | the staging bucket does not take that type (an SVG, a HEIC photo) | convert it to PNG or JPEG and stage again; an SVG goes through `upload_target` |
+| `attach_media`: upload_target is disabled | the old one-step upload, which stored a file with its metadata, is closed | `stage_upload`, the PUT, then `finalize_upload`, SVG included |
+| the PUT to a staged `upload_url` answers HTTP 400 with `"statusCode": "415"` (`invalid_mime_type`) in the body | the staging bucket does not take that type: a HEIC photo, or an SVG sent as `image/svg+xml` instead of the returned `upload_headers` | for an SVG, stage it with a `.svg` filename and PUT with the `upload_headers` stage returned; otherwise convert it to PNG or JPEG and stage again |
 | `finalize_upload`: larger than 5 MiB | the image is over the limit; the staged copy is gone | shrink it, then start again at `stage_upload` |
-| `finalize_upload`: not a PNG, JPEG, GIF or WebP image | the bytes are another format, whatever the name says (a HEIC photo, a PDF); the staged copy is gone | convert it to PNG or JPEG, then start again at `stage_upload` |
-| `finalize_upload`: the image's metadata could not be read | the file is damaged or unusual; nothing was published and the staged copy is gone | re-export it as a fresh PNG or JPEG and start again; if that fails too, tell the owner the reason after the colon |
+| `finalize_upload`: not a supported PNG, JPEG, GIF, WebP or vector SVG (vector SVG needs a .svg filename) | the bytes are another format, whatever the name says (a HEIC photo, a PDF), or an SVG was staged under another name; the staged copy is gone | stage an SVG again with a `.svg` filename; convert anything else to PNG or JPEG, then start again at `stage_upload` |
+| `finalize_upload`: the .svg file contains raster bytes | a PNG or JPEG renamed to `.svg`; the staged copy is gone | stage it again under its real extension |
+| `finalize_upload`: its metadata could not be read, with a reason starting `svg:` | the SVG holds a `<style>` block, an embedded `<image>`, a script, animation or a reference outside the file; the staged copy is gone | re-export it as plain shapes with inline fills, or render it to PNG, then start again at `stage_upload` |
+| `finalize_upload`: its metadata could not be read | the file is damaged or unusual; nothing was published and the staged copy is gone | re-export it as a fresh PNG or JPEG and start again; if that fails too, tell the owner the reason after the colon |
 | `finalize_upload`: nothing staged at that path | the PUT never landed, or the target expired | check the PUT answered 200, then stage and PUT again |
 | `finalize_upload`: not a path stage_upload issued to you | the `staged_path` was changed | pass `staged_path` exactly as `stage_upload` returned it |
 | `finalize_upload`: reading or downloading the staged upload failed | a storage error; the staged copy is still there | call `finalize_upload` again with the same `staged_path` |

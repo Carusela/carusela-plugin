@@ -73,7 +73,7 @@ Five, all URLs that must come from `attach_media`:
 
 | field | what it is | make it |
 |---|---|---|
-| `logo` | header lockup, light backgrounds | wide PNG, transparent |
+| `logo` | header lockup, light backgrounds | wide PNG or vector SVG, transparent |
 | `logo_dark` | same lockup for dark mode | same, light ink |
 | `favicon` | browser tab | square PNG, 192px |
 | `apple_icon` | iOS home screen | square PNG, 180px |
@@ -82,16 +82,20 @@ Five, all URLs that must come from `attach_media`:
 Upload each one first, through the two calls that strip the file's metadata, because a photo's
 GPS location would otherwise be public:
 
-1. `attach_media` `action: "stage_upload"` with a filename
-2. PUT the bytes to `upload_url` with the file's `Content-Type` (`image/png`, `image/jpeg`,
-   `image/gif` or `image/webp`; an SVG or a HEIC photo answers 415)
+1. `attach_media` `action: "stage_upload"` with a filename and the field as `image_surface`
+   (`logo` for both logos, `favicon`, `apple_icon` or `og_image`)
+2. PUT the bytes to `upload_url`. When stage returned `upload_headers`, send exactly those;
+   otherwise send the file's `Content-Type` (`image/png`, `image/jpeg`, `image/gif` or
+   `image/webp`). A HEIC photo is refused: HTTP 400 with `"statusCode": "415"` (`invalid_mime_type`) in the body
 3. `attach_media` `action: "finalize_upload"` with the `staged_path` from step 1, unchanged
 4. Use the `public_url` that finalize returns in `preview_design_change`, never before: nothing
    is published until finalize succeeds
 
-PNG, JPEG, GIF and WebP up to 5 MiB go this way. An SVG cannot be staged, so only an SVG uses
-`action: "upload_target"`, then the PUT, then its `public_url`. `upload_target` stores the file
-as sent, metadata included: never use it for anything else, and never to get past a refusal.
+PNG, JPEG, GIF, WebP and vector SVG up to 5 MiB all go this way. An SVG needs a filename ending
+in `.svg`: stage then returns `upload_headers: {"Content-Type": "text/plain"}`, and a PUT with
+`image/svg+xml` instead is refused: HTTP 400 with `"statusCode": "415"` (`invalid_mime_type`) in the body. Finalize parses the SVG and publishes plain vector markup
+only; its title, description, metadata and comments are removed. `upload_target` is disabled:
+it refuses with "upload_target is disabled" and names these same steps.
 
 Targets are single-use and expire, so stage one per file, close to when you upload it.
 
@@ -99,10 +103,20 @@ Targets are single-use and expire, so stage one per file, close to when you uplo
 use its `public_url`. A refusal from finalize has already removed the staged copy, except where
 it says the read failed, so:
 
-- **larger than 5 MiB**, **not a PNG, JPEG, GIF or WebP image** (a HEIC photo or a PDF, whatever
-  its name says), **metadata could not be read**: shrink it, convert it, or re-export it as a
-  fresh PNG or JPEG, then start again at `stage_upload`. If a re-export fails the same way, tell
-  the owner which file and the reason after the colon.
+- **larger than 5 MiB**, **not a supported PNG, JPEG, GIF, WebP or vector SVG** (a HEIC photo or
+  a PDF, whatever its name says), **its metadata could not be read**: shrink it, convert it, or
+  re-export it as a fresh PNG or JPEG, then start again at `stage_upload`. If a re-export fails
+  the same way, tell the owner which file and the reason after the colon.
+- **vector SVG needs a .svg filename**, in that same refusal: when the file really is an SVG, it
+  was staged under another name. Stage it again with a `.svg` filename and PUT it with the
+  returned `upload_headers`.
+- **the .svg file contains raster bytes**: a PNG or JPEG renamed to `.svg`. Stage it again under
+  its real extension.
+- **a reason after the colon that starts with `svg:`**: the SVG holds something finalize will
+  not publish, such as a `<style>` block (Illustrator classes), Inkscape `sodipodi` markup, an
+  embedded `<image>`, a script or event handler, animation, `<foreignObject>`, a DTD, or a
+  reference to anything outside the file (only `#id` references pass). Re-export it as plain
+  shapes with inline fills, or render it to PNG, then start again at `stage_upload`.
 - **nothing staged at**: the PUT never landed or the target expired. Stage and PUT again.
 - **not a path stage_upload issued to you**: pass `staged_path` exactly as stage returned it.
 - **reading or downloading the staged upload failed**: the staged copy is still there. Call
