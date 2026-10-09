@@ -109,10 +109,8 @@ file's `Content-Type` otherwise, then `attach_media` with `action: "finalize_upl
 `staged_path` stage returned, unchanged. Put the `public_url` finalize returns on the row, and
 only then: nothing is published until finalize succeeds. The target is single-use and expires.
 
-This takes PNG, JPEG, GIF, WebP and vector SVG up to 5 MiB; the PUT answers 415 for a HEIC
-photo. An SVG needs a filename ending in `.svg`: stage then returns
-`upload_headers: {"Content-Type": "text/plain"}`, and a PUT with `image/svg+xml` instead answers
-415. Finalize parses the SVG and publishes plain vector markup only. `upload_target` is
+This takes PNG, JPEG, GIF, WebP and vector SVG up to 5 MiB; a HEIC photo is refused: HTTP 400 with `"statusCode": "415"` (`invalid_mime_type`) in the body. An SVG needs a filename ending in `.svg`: stage then returns
+`upload_headers: {"Content-Type": "text/plain"}`, and a PUT with `image/svg+xml` instead is refused: HTTP 400 with `"statusCode": "415"` (`invalid_mime_type`) in the body. Finalize parses the SVG and publishes plain vector markup only. `upload_target` is
 disabled: it refuses with "upload_target is disabled" and names these same steps.
 
 `already_published: true` from finalize is a success: an earlier finalize published that file, so

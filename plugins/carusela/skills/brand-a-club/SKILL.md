@@ -86,14 +86,14 @@ GPS location would otherwise be public:
    (`logo` for both logos, `favicon`, `apple_icon` or `og_image`)
 2. PUT the bytes to `upload_url`. When stage returned `upload_headers`, send exactly those;
    otherwise send the file's `Content-Type` (`image/png`, `image/jpeg`, `image/gif` or
-   `image/webp`). A HEIC photo answers 415
+   `image/webp`). A HEIC photo is refused: HTTP 400 with `"statusCode": "415"` (`invalid_mime_type`) in the body
 3. `attach_media` `action: "finalize_upload"` with the `staged_path` from step 1, unchanged
 4. Use the `public_url` that finalize returns in `preview_design_change`, never before: nothing
    is published until finalize succeeds
 
 PNG, JPEG, GIF, WebP and vector SVG up to 5 MiB all go this way. An SVG needs a filename ending
 in `.svg`: stage then returns `upload_headers: {"Content-Type": "text/plain"}`, and a PUT with
-`image/svg+xml` instead answers 415. Finalize parses the SVG and publishes plain vector markup
+`image/svg+xml` instead is refused: HTTP 400 with `"statusCode": "415"` (`invalid_mime_type`) in the body. Finalize parses the SVG and publishes plain vector markup
 only; its title, description, metadata and comments are removed. `upload_target` is disabled:
 it refuses with "upload_target is disabled" and names these same steps.
 
