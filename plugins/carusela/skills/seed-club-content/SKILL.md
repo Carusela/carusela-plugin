@@ -102,24 +102,35 @@ only pass one if you mean to override.
 
 To upload an image rather than reference a video, use the two calls that strip its metadata,
 because a photo's GPS location would otherwise be public: `attach_media` with
-`action: "stage_upload"` and a filename, then PUT the bytes to the `upload_url` it returns with
-the file's `Content-Type`, then `attach_media` with `action: "finalize_upload"` and the
+`action: "stage_upload"`, a filename and the destination as `image_surface` (`course_cover`,
+`chapter_cover`, `lesson_thumbnail`, `library_cover` or `agent_image`), then PUT the bytes to
+the `upload_url` it returns, with the `upload_headers` it returns when there are any and the
+file's `Content-Type` otherwise, then `attach_media` with `action: "finalize_upload"` and the
 `staged_path` stage returned, unchanged. Put the `public_url` finalize returns on the row, and
 only then: nothing is published until finalize succeeds. The target is single-use and expires.
 
-This takes PNG, JPEG, GIF and WebP up to 5 MiB; the PUT answers 415 for an SVG or a HEIC photo.
-An SVG cannot be staged, so only an SVG uses `action: "upload_target"`, the PUT and its
-`public_url`. `upload_target` stores the file as sent, metadata included: never use it for
-anything else, and never to get past a refusal.
+This takes PNG, JPEG, GIF, WebP and vector SVG up to 5 MiB; the PUT answers 415 for a HEIC
+photo. An SVG needs a filename ending in `.svg`: stage then returns
+`upload_headers: {"Content-Type": "text/plain"}`, and a PUT with `image/svg+xml` instead answers
+415. Finalize parses the SVG and publishes plain vector markup only. `upload_target` is
+disabled: it refuses with "upload_target is disabled" and names these same steps.
 
 `already_published: true` from finalize is a success: an earlier finalize published that file, so
 use its `public_url`. A refusal from finalize has already removed the staged copy, except where
 it says the read failed:
 
-- **larger than 5 MiB**, **not a PNG, JPEG, GIF or WebP image** (a HEIC photo or a PDF, whatever
-  its name says), **metadata could not be read**: shrink it, convert it, or re-export it as a
-  fresh PNG or JPEG, then start again at `stage_upload`. If a re-export fails the same way, put
-  the file and the reason after the colon in the report.
+- **larger than 5 MiB**, **not a supported PNG, JPEG, GIF, WebP or vector SVG** (a HEIC photo or
+  a PDF, whatever its name says), **its metadata could not be read**: shrink it, convert it, or
+  re-export it as a fresh PNG or JPEG, then start again at `stage_upload`. If a re-export fails
+  the same way, put the file and the reason after the colon in the report.
+- **vector SVG needs a .svg filename**, in that same refusal: when the file really is an SVG, it
+  was staged under another name. Stage it again with a `.svg` filename and PUT it with the
+  returned `upload_headers`.
+- **the .svg file contains raster bytes**: a PNG or JPEG renamed to `.svg`. Stage it again under
+  its real extension.
+- **a reason after the colon that starts with `svg:`**: the SVG holds something finalize will
+  not publish, such as a `<style>` block, an embedded `<image>`, a script, animation or a
+  reference to anything outside the file. Render it to PNG and start again at `stage_upload`.
 - **nothing staged at**: the PUT never landed or the target expired. Stage and PUT again.
 - **not a path stage_upload issued to you**: pass `staged_path` exactly as stage returned it.
 - **reading or downloading the staged upload failed**: the staged copy is still there. Call
