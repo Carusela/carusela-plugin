@@ -149,7 +149,7 @@ retry the same request), and `values` holds the complete desired state, never a 
 | `priceAgorot` | whole agorot, 0 or more (₪490 is `49000`) |
 | `interval` | `one_time`, `monthly` or `yearly` |
 | `trialDays` | 0 or more, and 0 on a one-time offer |
-| `allowsInstalments`, `maxInstalments` | one-time offers only; `maxInstalments` at least 2 and only with instalments on |
+| `allowsInstalments`, `maxInstalments` | one-time offers only; `maxInstalments` 2 to 12 and only with instalments on |
 | `isPublished` | the state once applied, default true |
 | `orderBumpOfferId` | the offer's own single order bump, or null |
 

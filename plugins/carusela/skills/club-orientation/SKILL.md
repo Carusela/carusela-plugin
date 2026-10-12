@@ -113,7 +113,7 @@ same turn when the owner asked for the change:
 What the server checks before it stages anything: an offer sells exactly one product (a member
 tier or a course), its price is a whole number of agorot, its interval is `one_time`, `monthly`
 or `yearly`, a one-time offer has no trial days, instalments are allowed only on a one-time offer
-and then need at least 2. A percent coupon cannot exceed 100; a fixed one is in agorot. A member
+and then need 2 to 12. A percent coupon cannot exceed 100; a fixed one is in agorot. A member
 tier here is the club's own membership level, not the platform package the club pays Carusela
 for.
 
