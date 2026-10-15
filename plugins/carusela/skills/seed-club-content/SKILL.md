@@ -74,8 +74,12 @@ one by one; it is slower and the ordering is harder to get right.
 
 - `chapter` on a lesson groups it. Lessons sharing a chapter name **consecutively** render as
   that chapter, so order matters more than the string does.
-- Lessons are created in array order. `lesson_order` overrides it and **must list every lesson
-  id in the course** — a partial list is refused.
+- Lessons are created in array order, so on a create, order the `lessons` array itself.
+  `lesson_order` is for update only. It **must list every lesson id in the course** — a partial
+  list is refused — and it cannot go in the same call as new lessons (entries without an `id`),
+  whose ids do not exist yet: add the lessons first, then send `lesson_order` alone.
+- A call that fails partway says so: its error lists what was already written, with ids, and
+  the one `manage_course` update that finishes it. Send that update; do not repeat the call.
 - On update, a lesson entry with an `id` updates; one without an `id` is appended.
 
 Per lesson, the fields worth filling: `title`, `description`, `chapter`, `video_url`,
