@@ -161,8 +161,16 @@ palette cannot be checked from there. Say that rather than claiming dark mode is
 
 Every publish is a version. Two ways back:
 
-- **Call `preview_design_change` again with the old values.** For colours and assets, the
-  `changes` of the call you are undoing hold them. For `home_blocks`, send the whole list that was
+- **Call `preview_design_change` again with the old values.** For assets and light colours, take
+  them from the `changes` of the call you are undoing. Whenever the undo restores a colour, send
+  **both** `color_dark_primary` and `color_dark_accent`, even when one was explicitly supplied
+  before and did not change, so it is absent from `changes`. Use `previous_dark_colors.primary`
+  and `previous_dark_colors.accent` from that result. If an older result has no
+  `previous_dark_colors`, take `published.tokens.colorDark.primary.$value` and
+  `published.tokens.colorDark.accent.$value` from the `get_config` read saved before the change,
+  never from its unpublished draft. Sending only one dark colour, or
+  restoring light colours without the dark pair, can derive a new colour instead of restoring
+  the previous manual choice. For `home_blocks`, send the whole list that was
   live before the change, because the diff is block by block and the field replaces the list
   whole. Take it from the `get_config` read before the change only when its `home_blocks_source`
   was `published`; when it was `draft`, that list was an unpublished admin draft, and the live one
