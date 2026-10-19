@@ -370,8 +370,12 @@ Sales page) and put the returned hash on the step's `content.pageSha256` or on
 Carusela bar: on a step the bar carries the price, the terms and the accept and decline buttons; on
 the Thank You it carries the receipt and the button into the purchase. Design the page with that
 bar under it, with no buy, decline, price or course controls of its own (see "What this skill
-forbids"). A step or Thank You page gets no video player, so it carries no `data-carusela-video`
-slot. A hash this club never stored is refused with `page_not_found`.
+forbids"). Video works as on a designed Sales page: mark each slot with
+`data-carusela-video="<YouTube, Vimeo or Bunny URL>"` and an explicit size or `aspect-ratio`, and
+Carusela draws its player over it on the buyer's page; the Funnel editor's preview marks the slot
+instead. The frame grows to the page's full height and scrolls above the bar, so size full-screen
+sections with `var(--carusela-viewport-height, 100vh)`, and expect a `fixed` or `sticky` element
+to scroll away with the page. A hash this club never stored is refused with `page_not_found`.
 
 **Upsell or Downsell is derived, not chosen.** A step reached only by declines is a Downsell;
 every other step is an Upsell. Arrange `onAccept` and `onDecline` to get the shape the owner
