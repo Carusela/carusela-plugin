@@ -40,10 +40,12 @@ Never send `confirmation_token`. No tool accepts it now; a tool that receives it
 and the refusal names the retired argument. Call again without it, after reading the current
 state.
 
-Exactly two writes still wait for the owner: emailing real people needs their yes to the
-recipient count (`confirm_recipient_count`), and a migration import runs only after the owner
-approves its plan in the admin screen. An attestation a tool says only the owner can give (the
-mailing-list consent on `import_mailing_contacts`) is never supplied on their behalf: ask for it.
+Exactly three writes still wait for the owner: emailing real people needs their yes to the
+recipient count (`confirm_recipient_count`), a migration import runs only after the owner
+approves its plan in the admin screen, and staged newsletter subscribers become mailable only
+after the owner agrees to the counts (see Bringing in a newsletter list below). An attestation a
+tool says only the owner can give (the mailing-list consent on `import_mailing_contacts` and
+`stage_mailing_contacts`) is never supplied on their behalf: ask for it.
 
 ## The one thing to do first
 
@@ -68,6 +70,7 @@ Three read-only calls. They cost nothing and they answer most of what you were a
 | Change colours, logos or the home page's block order | `preview_design_change`, which publishes in the same call |
 | Bring in a video or upload a file | `attach_media` |
 | Bring in members from another system | `import_members` |
+| Bring in a newsletter list | `import_mailing_contacts`, or `stage_mailing_contacts` when the club already sends (see below) |
 | See what is for sale, and whether the club can sell | `get_commerce_catalog`, `get_commerce_changes`, `get_commerce_readiness` |
 | Set a price, an offer, a trial, a coupon or a member tier | `manage_offer`, `manage_coupon`, `manage_membership_tier`, then `apply_commerce_changes` |
 | Build a Sales page and its Funnel | see `build-sales-funnel` |
@@ -139,8 +142,8 @@ does not flip one. The door is that tab, not "ask Carusela".
 ## What MCP will never do, so stop looking
 
 - Charge a member, refund one, or connect or change the payment terminal
-- Email real people without the owner's yes to the recipient count, or run a migration import
-  the owner has not approved in the admin
+- Email real people without the owner's yes to the recipient count, run a migration import
+  the owner has not approved in the admin, or activate staged contacts the owner has not agreed to
 - Switch a feature flag
 - Reorder the navigation rail
 - Touch a repository, a deployment, DNS or a domain
@@ -151,6 +154,40 @@ count for an email, the admin screen for a migration plan, the features tab for 
 CHROME tab for the rail. Tell the user which door, and say plainly that this surface will not go
 around it. Then carry on with the part you can do. A refusal the user cannot act on is worse than
 no answer, so the door is the part that matters.
+
+## Bringing in a newsletter list
+
+`import_mailing_contacts` makes every address mailable at once: it joins the `all` audience in
+the same call. In a club that already sends campaigns or runs a series (`get_email_campaigns`,
+`get_email_series`), a campaign scheduled earlier could reach those addresses before the owner
+agreed. There, use `stage_mailing_contacts` instead. A Rav Messer or other platform migration
+with a manifest is neither: its list goes through the migration plan, whose approval is its
+activation (see `seed-club-content`).
+
+Staging lives in the owner's open migration session (`create_migration_session`, then the same
+`session_id` on every call), and activation is refused until the owner has approved that
+session's plan in the admin; the refusal names `plan_migration_import` and
+`/admin/migrations/<id>/plan`. That is the door, not a bug.
+
+1. **Stage.** `stage_mailing_contacts` takes up to 500 contacts per call, each with its consent
+   evidence (`consented_at`, `consent_version`, `source`), and the owner's own `attestation`.
+   Send the rest in more calls. A staged address counts nowhere and reaches no provider.
+2. **Read and show.** `get_staged_mailing_contacts` returns `staged_total` and the count per
+   list. Tell the owner those numbers, and that addresses the club has unsubscribed, suppressed
+   or already holds a decision for are skipped. The rest count in the `all` audience at once, so
+   a scheduled campaign that has not started sending includes them.
+3. **Activate only after an explicit yes.** Call `activate_staged_mailing_contacts` with the
+   `staged_digest` from that read, never one you computed. One call activates at most 500: while
+   `done` is false, call again with the same digest, without asking the owner again. If the read
+   shows `activation_in_progress`, continue with that digest, not `staged_digest`, also without
+   asking.
+4. **Report.** When `done` is true, tell the owner the totals, including `not_activated`.
+
+If activation says the staging changed, something was staged after the read: read again, show
+the owner the new counts and ask again. Staging is discarded if it is never activated: on a
+cancel, when the session's connected import expires, or after about 30 days untouched;
+`discarded_after` in the read gives the date. These tools return counts, never addresses. Do not
+print the addresses back or ask for them back.
 
 ## Three traps that cost real time
 

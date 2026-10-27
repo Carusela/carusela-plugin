@@ -60,6 +60,9 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   resumable batches. It asks for record hashes and file digests, so it needs a session that can run
   code (Claude Code with a shell). If you cannot compute what it asks for, say so to the owner
   rather than recreating members by hand.
+- **A newsletter list inside the export** stays on that manifest path: the owner's approval of the
+  plan is its activation. Staging (`stage_mailing_contacts`) is for a list that arrives on its own
+  in a club that already sends. See `club-orientation`.
 - **Payments never move.** No card numbers, CardCom tokens, Schooler credentials or active
   subscriptions go into Carusela by any path. A member's paid access in the new club comes from a
   fresh checkout; say that to the owner up front.
