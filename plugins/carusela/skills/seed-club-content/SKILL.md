@@ -60,6 +60,16 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   resumable batches. It asks for record hashes and file digests, so it needs a session that can run
   code (Claude Code with a shell). If you cannot compute what it asks for, say so to the owner
   rather than recreating members by hand.
+- **A large account** (people, memberships, fields and messages each count as a record) does not
+  fit `validate_migration_manifest`'s one-request byte limit. Stage the records first with
+  `stage_migration_records`: chunks of up to 5,000, each at its offset from 0, with the bundle's
+  total as `record_count` on every chunk, until the answer says `complete: true`. Then call
+  `validate_migration_manifest` with `use_staged_records: true` and no `records`. A chunk whose
+  answer was lost is sent again exactly as it was; a position is written once, so that changes
+  nothing. `restart: true` is the only way to replace what was staged. `get_staged_migration_records`
+  and `get_migration_validation_items` page what the server holds and what validation reported.
+  A bundle holds at most 50,000 records. A larger account is not supported yet: stop and tell the
+  owner. `club-migration://contract` (`large_bundles`) has the same steps.
 - **A newsletter list inside the export** stays on that manifest path: the owner's approval of the
   plan is its activation. Staging (`stage_mailing_contacts`) is for a list that arrives on its own
   in a club that already sends. See `club-orientation`.
