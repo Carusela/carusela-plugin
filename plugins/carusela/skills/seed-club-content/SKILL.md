@@ -224,6 +224,24 @@ items one at a time.
 
 Groups have no published state at all. `is_private` is their only visibility axis.
 
+## Open dates
+
+Content that opens on a date or day by day is a release schedule, set **after** the course and its
+lessons exist. Their ids are in the `manage_course` result. Send one call:
+
+```
+manage_course  action: "update"  id: <course>
+  schedule: {course: {schedule_mode: "member_start"},
+             sections: [{id: <week 1>, release_offset_days: 0}, {id: <week 2>, release_offset_days: 7}]}
+```
+
+- **A drip by days** since each member joined is `member_start`. Day N is `release_offset_days` N - 1.
+- **Fixed dates** are `dates`, with `release_at` as an ISO time carrying its offset.
+- A freshly imported course has nothing open to members yet, so the call saves without a
+  confirmation.
+- `gate-club-access` explains the modes, what members see before an item opens, and the
+  `confirm_relocked_members` step for a course members already use.
+
 ## Covers
 
 Once content is created and reviewed, whatever still has no cover image is the last thing to
