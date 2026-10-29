@@ -68,8 +68,8 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   answer was lost is sent again exactly as it was; a position is written once, so that changes
   nothing. `restart: true` is the only way to replace what was staged. `get_staged_migration_records`
   and `get_migration_validation_items` page what the server holds and what validation reported.
-  A bundle holds at most 50,000 records: above that, stop and tell the owner rather than splitting
-  one account across sessions. `club-migration://contract` (`large_bundles`) has the same steps.
+  A bundle holds at most 50,000 records. A larger account is not supported yet: stop and tell the
+  owner. `club-migration://contract` (`large_bundles`) has the same steps.
 - **A newsletter list inside the export** stays on that manifest path: the owner's approval of the
   plan is its activation. Staging (`stage_mailing_contacts`) is for a list that arrives on its own
   in a club that already sends. See `club-orientation`.
