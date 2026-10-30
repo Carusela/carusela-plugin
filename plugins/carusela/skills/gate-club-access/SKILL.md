@@ -1,6 +1,6 @@
 ---
 name: gate-club-access
-description: Decide which Carusela content each access tier can reach, and apply it. Use when somebody wants to gate content, build a free tier, put material behind a paid level, or asks why a member cannot see something.
+description: Decide which Carusela content each access tier can reach and when it opens, and apply it. Use when somebody wants to gate content, build a free tier, put material behind a paid level, open a course or lessons on a date or day by day from each member's join date, or asks why a member cannot see something.
 ---
 
 # Gate club access
@@ -68,6 +68,52 @@ The shape most clubs want, and the reasoning:
 
 Put the prerequisites free even when the course is paid. A member who cannot complete the setup
 cannot use what they bought, and support absorbs the difference.
+
+## Open content on a schedule
+
+Tiers decide **who** gets in. The release schedule decides **when**, for people who already have
+access. It never opens anything to someone without access, and it never takes away what they own.
+Read the schedule first:
+
+```
+get_course_schedule  course_id: <course>  [preview_day: N | preview_at: <ISO time>]
+```
+
+The answer has four parts:
+
+- **The course settings.**
+  - `schedule_mode` is `dates` (fixed dates, the same for everyone) or `member_start` (each member
+    counts days from the day they bought or joined).
+  - `release_hour` is the hour that day 2 onward opens, in Israel time.
+  - Also `release_at`, `pre_release_visibility`, `default_item_visibility` and `notify_on_release`.
+- **Every section and lesson.** Each has its own rule and its effective rule. A lesson never opens
+  before its section or its course. `overridden: true` means its own earlier rule is ignored.
+- **The preview.** `released` at the moment you previewed.
+- **Warnings.** Offers whose access ends before the last lesson opens.
+
+How to set it:
+
+| The owner wants | Call |
+|---|---|
+| The whole course opens on a date (presale) | `manage_course` update, `schedule: {course: {release_at: "2026-11-05T08:00:00+02:00", pre_release_visibility: "teaser"}}` |
+| A drip by days since each member joined | `manage_course` update, `schedule: {course: {schedule_mode: "member_start"}, sections: [{id, release_offset_days: 0}, {id, release_offset_days: 7}, ...]}` |
+| One lesson or the course on its own | `set_content_visibility` with `release_at`, `release_offset_days` (lessons) or `pre_release_visibility` |
+| New sections with their dates | `save_course_structure` with `release` |
+
+**Getting the values right:**
+- **Day N is `release_offset_days` N - 1.** Day 1 opens at the member's start. A weekly course
+  opens week N on offset 7(N - 1).
+- **Times carry their offset.** Never send a time with no offset. 02:00 to 02:59 Israel time is
+  refused, because that hour does not exist on the night the clocks move forward.
+- **`teaser` shows the item with its date as coming soon. `hidden` leaves it out until it opens.**
+  Recordings, tutorials, guides, events and groups have no schedule, and the tools refuse one by
+  name.
+
+**When a change would close lessons members already opened, nothing is written.** The answer is
+`status: confirmation_required` with `relocked_members` and `relocked_lessons`. Moving a lesson
+into a later section in `save_course_structure` counts too. Tell the owner the numbers in plain
+words. Only if they agree, send the same call again with `confirm_relocked_members` set to that
+member count. Never confirm on your own.
 
 ## When somebody asks for a price, an offer or a new tier
 
