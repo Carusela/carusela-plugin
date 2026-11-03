@@ -72,8 +72,11 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   tell the owner to contact Carusela support (support@carusela.com), who will help them move it.
   `club-migration://contract` (`large_bundles`) has the same steps.
 - **A newsletter list inside the export** stays on that manifest path: the owner's approval of the
-  plan is its activation. Staging (`stage_mailing_contacts`) is for a list that arrives on its own
-  in a club that already sends. See `club-orientation`.
+  plan is its activation. A mailing list that arrives on its own (a Rav Messer export of contacts,
+  lists and tags) goes through the owner's file upload, `get_mailing_upload` and its
+  `upload_page`, never row by row through the conversation; a short list of a few hundred can use
+  `import_mailing_contacts`, or `stage_mailing_contacts` in a club that already sends. See
+  `club-orientation`.
 - **Payments never move.** No card numbers, CardCom tokens, Schooler credentials or active
   subscriptions go into Carusela by any path. A member's paid access in the new club comes from a
   fresh checkout; say that to the owner up front.
