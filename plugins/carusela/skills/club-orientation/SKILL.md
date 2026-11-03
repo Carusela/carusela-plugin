@@ -42,10 +42,11 @@ state.
 
 Exactly three writes still wait for the owner: emailing real people needs their yes to the
 recipient count (`confirm_recipient_count`), a migration import runs only after the owner
-approves its plan in the admin screen, and staged newsletter subscribers become mailable only
-after the owner agrees to the counts (see Bringing in a newsletter list below). An attestation a
-tool says only the owner can give (the mailing-list consent on `import_mailing_contacts` and
-`stage_mailing_contacts`) is never supplied on their behalf: ask for it.
+approves its plan in the admin screen, and staged newsletter subscribers, or a mailing file the
+owner uploaded, become mailable only after the owner agrees to the counts (see Bringing in a
+newsletter list below). An attestation a tool says only the owner can give (the mailing-list
+consent on `import_mailing_contacts` and `stage_mailing_contacts`) is never supplied on their
+behalf: ask for it.
 
 ## The one thing to do first
 
@@ -70,7 +71,7 @@ Three read-only calls. They cost nothing and they answer most of what you were a
 | Change colours, logos or the home page's block order | `preview_design_change`, which publishes in the same call |
 | Bring in a video or upload a file | `attach_media` |
 | Bring in members from another system | `import_members` |
-| Bring in a newsletter list | `import_mailing_contacts`, or `stage_mailing_contacts` when the club already sends (see below) |
+| Bring in a newsletter list | A file, or over about 500 rows: `get_mailing_upload`. A short list: `import_mailing_contacts`, or `stage_mailing_contacts` when the club already sends (see below) |
 | See what is for sale, and whether the club can sell | `get_commerce_catalog`, `get_commerce_changes`, `get_commerce_readiness` |
 | Set a price, an offer, a trial, a coupon or a member tier | `manage_offer`, `manage_coupon`, `manage_membership_tier`, then `apply_commerce_changes` |
 | Build a Sales page and its Funnel | see `build-sales-funnel` |
@@ -156,6 +157,43 @@ around it. Then carry on with the part you can do. A refusal the user cannot act
 no answer, so the door is the part that matters.
 
 ## Bringing in a newsletter list
+
+### A file, or more than about 500 rows
+
+`import_mailing_contacts` and `stage_mailing_contacts` take at most 500 contacts per call and
+carry every row through the conversation. For the owner's export (Rav Messer or another mailing
+system), a list with lists and tags, or anything over about 500 rows, use the owner's file upload
+instead: no tool takes a row, and no address enters the conversation. Follow each answer's
+`next_step`.
+
+1. **Send the owner to the page.** `get_mailing_upload` returns `upload_page`, the audiences tab
+   of the club's own admin. The owner picks the file there (CSV only, up to 100,000 rows), maps
+   its columns and confirms that the active people agreed at the source. The consent date always
+   comes from a column, per row. The consent version and source come from a column, or the owner
+   types one value for the whole file, and each consent records that (`declared_for_file`). A row
+   marked as removed only records that the person left the lists named in its own cells, gets no
+   consent and removes nobody already on the club's lists; a removed row with no list is rejected
+   (`left_without_list`).
+2. **Read the progress.** Call `get_mailing_upload` again; with no id it reads the owner's latest
+   upload. While `complete` is false, rows are missing: the owner picks the same file again with
+   the same columns and values, and rows already received are not taken twice. An upload not
+   finished within seven days is closed.
+3. **Show the preview.** Tell the owner `valid_rows`, how many get consent (`active_rows`) and how
+   many are recorded as having left (`left_rows`), `rejected_rows` by `rejected_by_reason`, and
+   each list and tag with whether the club has it already (`in_club`). Page them with
+   `lists_offset` and `rejections_offset`, 50 at a time, or point the owner to the same screen on
+   the upload page. Say that an address the club holds an unsubscribe, a suppression or a decision
+   for gets no new consent, that a list the club has is used as it is, what
+   `package_member_count.note` says about the package's member ceiling, and that nothing is sent.
+4. **Activate only after an explicit yes.** Call `activate_mailing_upload` with the `upload_id`
+   and the `digest` from that read, never one you computed. While `done` is false, call again with
+   `activation.digest`, without asking the owner again. If the digest no longer matches while the
+   upload is still staging, read again, show the new counts and ask again. Activation sends
+   nothing to anyone.
+5. **Report** the counts `next_step` names. `cancel_mailing_upload` drops an upload that was not
+   activated, only when the owner asks.
+
+### A short list
 
 `import_mailing_contacts` makes every address mailable at once: it joins the `all` audience in
 the same call. In a club that already sends campaigns or runs a series (`get_email_campaigns`,
