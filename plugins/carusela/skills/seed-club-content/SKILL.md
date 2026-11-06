@@ -71,6 +71,16 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   A bundle holds at most 50,000 records. For a larger account, do not split it yourself: stop and
   tell the owner to contact Carusela support (support@carusela.com), who will help them move it.
   `club-migration://contract` (`large_bundles`) has the same steps.
+- **A record refused with `migration_record_erased`** means the club erased someone on request while
+  this session is open. `validate_migration_manifest` and `stage_migration_records` name the
+  `source_uid` of the member record, or of a record that points at it. Remove that record, the
+  records that point at it, every other member record with the same address, and what points at
+  those, then validate again. A bundle already staged restarts with `restart: true`. Removing only
+  the record named can leave another record of that address that imports and gets mailed. Never
+  change the address, the phone or the source id to get past it. A record can be refused for a
+  phone it shares with the person erased, so someone else may be in what you remove: tell the owner
+  they can add that person by hand after the import. `club-migration://contract` (`erased_people`)
+  has the same steps.
 - **A newsletter list inside the export** stays on that manifest path: the owner's approval of the
   plan is its activation. A mailing list that arrives on its own (a Rav Messer export of contacts,
   lists and tags) goes through the owner's file upload, `get_mailing_upload` and its
