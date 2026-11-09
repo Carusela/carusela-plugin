@@ -48,7 +48,8 @@ and the refusal names the retired argument. Call again without it, after reading
 state.
 
 Exactly four writes still wait for the owner: emailing real people needs their yes to the
-recipient count (`confirm_recipient_count`), a migration import runs only after the owner
+recipient count (`confirm_recipient_count`), and that includes members' access invites
+(`send_member_access_invites`), a migration import runs only after the owner
 approves its plan in the admin screen, staged newsletter subscribers, or a mailing file the
 owner uploaded, become mailable only after the owner agrees to the counts (see Bringing in a
 newsletter list below), and a support request is filed only after the owner agrees to the title
@@ -79,6 +80,7 @@ Three read-only calls. They cost nothing and they answer most of what you were a
 | Change colours, logos or the home page's block order | `preview_design_change`, which publishes in the same call |
 | Bring in a video or upload a file | `attach_media` |
 | Bring in members from another system | `import_members` |
+| Send members their access invite, after an import | `send_member_access_invites`: the first call sends nothing and returns the count and the skipped members; tell the owner the number, and send only after their yes |
 | Bring in a newsletter list | A file, or over about 500 rows: `get_mailing_upload`. A short list: `import_mailing_contacts`, or `stage_mailing_contacts` when the club already sends (see below) |
 | See what is for sale, and whether the club can sell | `get_commerce_catalog`, `get_commerce_changes`, `get_commerce_readiness` |
 | Set a price, an offer, a trial, a coupon or a member tier | `manage_offer`, `manage_coupon`, `manage_membership_tier`, then `apply_commerce_changes` |
