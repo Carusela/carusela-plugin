@@ -79,7 +79,16 @@ Five, all URLs that must come from `attach_media`:
 | `apple_icon` | iOS home screen | square PNG, 180px |
 | `og_image` | social share card | **1200x630 PNG** |
 
-Upload each one first, through the two calls that strip the file's metadata, because a photo's
+An asset that already sits at a public https address (the owner's current site, an old platform)
+needs no upload: `attach_media` `action: "import_from_urls"` with
+`images: [{ source_url, image_surface }]` fetches it on the server, strips its metadata the same
+way finalize does and returns its `public_url` for `preview_design_change`. Read each item: one
+with `ok: false` names why (`stage: "fetch"` for an address that is private, redirects to another
+host or is over 5 MiB, `stage: "clean"` for a file that is not a supported image; an SVG address
+must end in `.svg`), and a failed one does not stop the rest. Repeating the call does not upload
+the same image again.
+
+A file on disk: upload each one first, through the two calls that strip the file's metadata, because a photo's
 GPS location would otherwise be public:
 
 1. `attach_media` `action: "stage_upload"` with a filename and the field as `image_surface`
