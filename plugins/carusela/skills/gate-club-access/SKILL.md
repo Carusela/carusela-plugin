@@ -124,7 +124,9 @@ the approval, and the apply happens in that call. If the request leaves the pric
 level open, ask for it first. A new tier is not a rung of the ladder until it is applied, so gate
 content against it afterwards, not before. Check `get_commerce_readiness` before promising a paid
 offer: without a connected terminal it can be staged and cannot be sold. See `build-sales-funnel`
-for the fields.
+for the fields. If the owner wants an access rule the ladder, the schedule and the tiers cannot
+express, offer to send it to the Carusela team with `submit_support_request` (see
+`club-orientation`, Asking the team).
 
 ## Verify
 

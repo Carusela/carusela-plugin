@@ -59,7 +59,8 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   flow built for a whole-club move: a session, a validated manifest, a plan the owner approves once,
   resumable batches. It asks for record hashes and file digests, so it needs a session that can run
   code (Claude Code with a shell). If you cannot compute what it asks for, say so to the owner
-  rather than recreating members by hand.
+  rather than recreating members by hand, and offer to send it to the Carusela team with
+  `submit_support_request` (see `club-orientation`, Asking the team) so they can help move it.
 - **A large account** (people, memberships, fields and messages each count as a record) does not
   fit `validate_migration_manifest`'s one-request byte limit. Stage the records first with
   `stage_migration_records`: chunks of up to 5,000, each at its offset from 0, with the bundle's
@@ -69,7 +70,9 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   nothing. `restart: true` is the only way to replace what was staged. `get_staged_migration_records`
   and `get_migration_validation_items` page what the server holds and what validation reported.
   A bundle holds at most 50,000 records. For a larger account, do not split it yourself: stop and
-  tell the owner to contact Carusela support (support@carusela.com), who will help them move it.
+  offer to send it to the Carusela team with `submit_support_request` (`kind: "feature_request"`,
+  with the record counts), who will help them move it. Without that tool, the owner files it at
+  `/admin/support` or writes to support@carusela.com.
   `club-migration://contract` (`large_bundles`) has the same steps.
 - **A record refused with `migration_record_erased`** means the club erased someone on request while
   this session is open. `validate_migration_manifest` and `stage_migration_records` name the
@@ -263,7 +266,8 @@ walks the whole club.
 
 Check the tool exists first. If `generate_missing_covers` is not in `tools/list`, the club is on
 an older MCP version that does not have it. Say so and skip this step entirely; do not try to
-fake it with `generate_cover` in a loop.
+fake it with `generate_cover` in a loop. If the owner wants the covers anyway, offer to send it to
+the Carusela team with `submit_support_request` (see `club-orientation`, Asking the team).
 
 Generation runs on the club's AI key, which is Carusela's unless the owner has set their own in
 admin > integrations. Either way it is counted against the club's daily cover limit.

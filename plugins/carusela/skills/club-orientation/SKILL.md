@@ -1,6 +1,6 @@
 ---
 name: club-orientation
-description: Read this before the first write to a Carusela club. Explains what the MCP can and cannot do, why a refusal is usually correct, and how to pick the right club. Use whenever a Carusela tool is about to be called for the first time in a session, when a tool refuses a field, or when somebody asks what Claude can change in their club.
+description: Read this before the first write to a Carusela club. Explains what the MCP can and cannot do, why a refusal is usually correct, and how to pick the right club. Use whenever a Carusela tool is about to be called for the first time in a session, when a tool refuses a field, when the owner asks for something no tool can do, or when somebody asks what Claude can change in their club.
 ---
 
 # Carusela orientation
@@ -16,6 +16,13 @@ telling you the change belongs somewhere else, usually because it decides money 
 
 If a refusal blocks the user's goal, the answer is to say so and name the right door. Never a
 workaround.
+
+**Never leave the owner at "that is impossible".** The owner always has an answer: the Carusela
+team. When the owner asks for something no tool here does, when a refusal blocks them and they
+have no door they can open themselves, or when something that should work does not, say it is
+not supported here yet and offer to send it to the team with `submit_support_request` (see Asking
+the team below). Do this even when you are sure nobody has asked for it before. A request is not
+a workaround: a person on the team reads it and answers.
 
 **Never write before you have read the club's config.** `get_config` is one call and it tells
 you the brand, the tiers, the enabled features, the navigation and the mentor. Half the mistakes
@@ -40,13 +47,14 @@ Never send `confirmation_token`. No tool accepts it now; a tool that receives it
 and the refusal names the retired argument. Call again without it, after reading the current
 state.
 
-Exactly three writes still wait for the owner: emailing real people needs their yes to the
+Exactly four writes still wait for the owner: emailing real people needs their yes to the
 recipient count (`confirm_recipient_count`), a migration import runs only after the owner
-approves its plan in the admin screen, and staged newsletter subscribers, or a mailing file the
+approves its plan in the admin screen, staged newsletter subscribers, or a mailing file the
 owner uploaded, become mailable only after the owner agrees to the counts (see Bringing in a
-newsletter list below). An attestation a tool says only the owner can give (the mailing-list
-consent on `import_mailing_contacts` and `stage_mailing_contacts`) is never supplied on their
-behalf: ask for it.
+newsletter list below), and a support request is filed only after the owner agrees to the title
+and description you will send (see Asking the team below). An attestation a tool says only the
+owner can give (the mailing-list consent on `import_mailing_contacts` and
+`stage_mailing_contacts`) is never supplied on their behalf: ask for it.
 
 ## The one thing to do first
 
@@ -75,7 +83,9 @@ Three read-only calls. They cost nothing and they answer most of what you were a
 | See what is for sale, and whether the club can sell | `get_commerce_catalog`, `get_commerce_changes`, `get_commerce_readiness` |
 | Set a price, an offer, a trial, a coupon or a member tier | `manage_offer`, `manage_coupon`, `manage_membership_tier`, then `apply_commerce_changes` |
 | Build a Sales page and its Funnel | see `build-sales-funnel` |
+| Refund a member's purchase or subscription charge | `list_club_purchases`, then `refund_member_purchase` |
 | See what has been done | `get_audit_log` |
+| Ask the Carusela team for something no tool does, or report something broken | `submit_support_request` (see Asking the team below) |
 
 ## The three rings, in one paragraph each
 
@@ -129,7 +139,8 @@ requires both `status: "ready"` and `support_email_set: true`. Missing terminal 
 in the payments tab. A missing support email needs an address the owner names or confirms:
 `update_club_copy { links: { supportEmail } }` or `/admin?tab=contact`. Never publish the sign-in
 email as a support address without confirmation. An unknown support-email check gets a retry,
-not permission to sell. Nothing in Ring C charges a member or refunds one.
+not permission to sell. Nothing in Ring C charges a member or refunds one (refunds have their own
+tool, `refund_member_purchase`).
 
 Sales pages and Funnels sit on top of Ring C. Each publishes in one call and rolls back in one
 call, or a Sales page and its saved Funnel draft can go live inside the same commercial batch. See
@@ -138,11 +149,13 @@ call, or a Sales page and its saved Funnel draft can go live inside the same com
 **Feature flags are the owner's, in the admin.** Whether the community, groups, events, the AI
 mentor or the agents page is on is switched in the admin under "יכולות הקהילה", `/admin?tab=features`.
 MCP reads them through `get_config` and refuses to create content behind a flag that is off; it
-does not flip one. The door is that tab, not "ask Carusela".
+does not flip one. The door is that tab. If the owner cannot find the switch or wants a feature
+that is not in it, offer to ask the team (see Asking the team below).
 
 ## What MCP will never do, so stop looking
 
-- Charge a member, refund one, or connect or change the payment terminal
+- Charge a member, or connect or change the payment terminal (refunds are possible:
+  `refund_member_purchase`)
 - Email real people without the owner's yes to the recipient count, run a migration import
   the owner has not approved in the admin, or activate staged contacts the owner has not agreed to
 - Switch a feature flag
@@ -154,7 +167,41 @@ Each has a real door: the admin payments tab for the terminal, the owner's yes t
 count for an email, the admin screen for a migration plan, the features tab for flags, the admin
 CHROME tab for the rail. Tell the user which door, and say plainly that this surface will not go
 around it. Then carry on with the part you can do. A refusal the user cannot act on is worse than
-no answer, so the door is the part that matters.
+no answer, so the door is the part that matters. If the owner cannot use that door, or wants this
+surface to do it, offer to send the request to the team. The owner leaves with a door and a person
+who will answer, never with "it cannot be done".
+
+## Asking the team
+
+`submit_support_request` files a request with the Carusela team for the club this call acts on,
+the same report the owner files at `/admin/support`. Use it for a feature no tool has
+(`kind: "feature_request"`) and for something that should work and does not (`kind: "bug"`).
+
+1. **Say it plainly, then offer.** "This is not supported here yet. Shall I send it to the
+   Carusela team? They answer on your Support page." In the owner's language. Never promise that it
+   will be built, or when.
+2. **Show what you will send.** A title of one line and a description in the owner's words: what
+   they asked for, what they were trying to achieve, which tool refused or was missing and what it
+   answered. The title is 3 to 200 characters, the description 10 to 5000. No passwords, card
+   numbers or a member's personal details. No club name or address in
+   the arguments; the call already knows the club.
+3. **File after their yes**, with a new `request_id` for each new request (reusing one for
+   different content is refused as `conflict`). If the answer is uncertain,
+   retry once with the same `request_id` and identical content; that never files twice.
+4. **Report** the `follow_up` it returns: the team has been notified, and the answer and status
+   appear on the club's `/admin/support` page.
+
+Then carry on with whatever part of the goal the tools can do.
+
+A tool answer that sends the club "to support" (a refund that failed at CardCom,
+`payment_not_settled` when the member says they were charged, `order_refund_not_here`) is a
+`kind: "bug"` request, filed the same way.
+
+If the tool is not in `tools/list`, the owner files the same request on the Support page of their
+club's admin (`/admin/support`). On `rate_limit` that page is refused too: tell the owner the
+request can be sent once the oldest of the day's requests is a day old, or they can write to
+support@carusela.com now. A seat that is not the owner or an admin cannot file one: ask the club's
+owner to send it. Anyone can write to support@carusela.com. There is always one of these.
 
 ## Bringing in a newsletter list
 

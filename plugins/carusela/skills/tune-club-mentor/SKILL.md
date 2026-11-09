@@ -138,7 +138,9 @@ second proves the mentor knows this specific club.
 
 `mentor_avatar`, `mentor_route_prefixes` (which areas it may link to), `mentor_internal_hosts`
 and `mentor_starter_answers` are all Ring B: the mentor section of the brand editor. The refusal
-messages name them. Do not look for another tool.
+messages name them. Do not look for another tool. If the owner wants the mentor to do something
+none of these fields or the brand editor offers, offer to send it to the Carusela team with
+`submit_support_request` (see `club-orientation`, Asking the team).
 
 ## Verify
 

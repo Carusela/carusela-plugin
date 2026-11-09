@@ -496,11 +496,12 @@ keeps the live one. Pass a winner only when the owner named it.
 | `finalize_upload`: not a supported PNG, JPEG, GIF, WebP or vector SVG (vector SVG needs a .svg filename) | the bytes are another format, whatever the name says (a HEIC photo, a PDF), or an SVG was staged under another name; the staged copy is gone | stage an SVG again with a `.svg` filename; convert anything else to PNG or JPEG, then start again at `stage_upload` |
 | `finalize_upload`: the .svg file contains raster bytes | a PNG or JPEG renamed to `.svg`; the staged copy is gone | stage it again under its real extension |
 | `finalize_upload`: its metadata could not be read, with a reason starting `svg:` | the SVG holds a `<style>` block, an embedded `<image>`, a script, animation or a reference outside the file; the staged copy is gone | re-export it as plain shapes with inline fills, or render it to PNG, then start again at `stage_upload` |
-| `finalize_upload`: its metadata could not be read | the file is damaged or unusual; nothing was published and the staged copy is gone | re-export it as a fresh PNG or JPEG and start again; if that fails too, tell the owner the reason after the colon |
+| `finalize_upload`: its metadata could not be read | the file is damaged or unusual; nothing was published and the staged copy is gone | re-export it as a fresh PNG or JPEG and start again; if that fails too, tell the owner the reason after the colon and offer to report it to the team with `submit_support_request` |
 | `finalize_upload`: nothing staged at that path | the PUT never landed, or the target expired | check the PUT answered 200, then stage and PUT again |
 | `finalize_upload`: not a path stage_upload issued to you | the `staged_path` was changed | pass `staged_path` exactly as `stage_upload` returned it |
 | `finalize_upload`: reading or downloading the staged upload failed | a storage error; the staged copy is still there | call `finalize_upload` again with the same `staged_path` |
 | `finalize_upload`: publishing the image to cms-images failed | storage refused the clean image; the staged copy is gone | tell the owner the reason it gives; stage again only if it is temporary |
+| a refusal not in this table, the same refusal again after its fix, or something the owner wants that no tool here offers | this surface cannot do it today | never tell the owner it cannot be done: say it is not supported here yet and offer to send it to the Carusela team with `submit_support_request` (see `club-orientation`, Asking the team) |
 
 Every call, refused or not, lands in `get_audit_log` with `source: "mcp"`.
 
