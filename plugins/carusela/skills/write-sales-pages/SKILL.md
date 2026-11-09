@@ -42,7 +42,10 @@ remove only the files this run created.
 On `version_mismatch`, discard the old instructions and fetch a fresh index before continuing.
 If the tool is unavailable, or returns `not_entitled`, `not_released` or `bundle_unsound`, stop
 method-based authoring and explain the refusal. Retry `club_state_unknown` or `audit_unavailable`
-once, then stop if it repeats. Respect other access refusals. Do not bypass them with another
+once, then stop if it repeats. Either way, never leave it at the refusal: offer to send it to the
+Carusela team with `submit_support_request` (`kind: "bug"` for a repeated `club_state_unknown` or
+`audit_unavailable`, otherwise `feature_request`; see `club-orientation`, Asking the team).
+Respect other access refusals. Do not bypass them with another
 club, a cached bundle or a page written from memory.
 
 ## Keep the work local and the method out of deliverables

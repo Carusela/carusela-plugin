@@ -71,8 +71,8 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   and `get_migration_validation_items` page what the server holds and what validation reported.
   A bundle holds at most 50,000 records. For a larger account, do not split it yourself: stop and
   offer to send it to the Carusela team with `submit_support_request` (`kind: "feature_request"`,
-  with the record counts), who will help them move it. Without that tool, the owner writes to
-  support@carusela.com.
+  with the record counts), who will help them move it. Without that tool, the owner files it at
+  `/admin/support` or writes to support@carusela.com.
   `club-migration://contract` (`large_bundles`) has the same steps.
 - **A record refused with `migration_record_erased`** means the club erased someone on request while
   this session is open. `validate_migration_manifest` and `stage_migration_records` name the

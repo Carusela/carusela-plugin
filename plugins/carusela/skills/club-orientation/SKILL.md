@@ -139,7 +139,8 @@ requires both `status: "ready"` and `support_email_set: true`. Missing terminal 
 in the payments tab. A missing support email needs an address the owner names or confirms:
 `update_club_copy { links: { supportEmail } }` or `/admin?tab=contact`. Never publish the sign-in
 email as a support address without confirmation. An unknown support-email check gets a retry,
-not permission to sell. Nothing in Ring C charges a member or refunds one.
+not permission to sell. Nothing in Ring C charges a member or refunds one (refunds have their own
+tool, `refund_member_purchase`).
 
 Sales pages and Funnels sit on top of Ring C. Each publishes in one call and rolls back in one
 call, or a Sales page and its saved Funnel draft can go live inside the same commercial batch. See
@@ -181,19 +182,26 @@ the same report the owner files at `/admin/support`. Use it for a feature no too
    will be built, or when.
 2. **Show what you will send.** A title of one line and a description in the owner's words: what
    they asked for, what they were trying to achieve, which tool refused or was missing and what it
-   answered. No passwords, card numbers or a member's personal details. No club name or address in
+   answered. The title is 3 to 200 characters, the description 10 to 5000. No passwords, card
+   numbers or a member's personal details. No club name or address in
    the arguments; the call already knows the club.
-3. **File after their yes**, with a new `request_id` you choose once. If the answer is uncertain,
+3. **File after their yes**, with a new `request_id` for each new request (reusing one for
+   different content is refused as `conflict`). If the answer is uncertain,
    retry once with the same `request_id` and identical content; that never files twice.
 4. **Report** the `follow_up` it returns: the team has been notified, and the answer and status
    appear on the club's `/admin/support` page.
 
 Then carry on with whatever part of the goal the tools can do.
 
-If the tool is not in `tools/list` or it refuses with `rate_limit`, the owner files the same
-request on the Support page of their club's admin (`/admin/support`). A seat that is not the owner
-or an admin cannot file one: ask the club's owner to send it. Anyone can write to
-support@carusela.com. There is always one of these.
+A tool answer that sends the club "to support" (a refund that failed at CardCom,
+`payment_not_settled` when the member says they were charged, `order_refund_not_here`) is a
+`kind: "bug"` request, filed the same way.
+
+If the tool is not in `tools/list`, the owner files the same request on the Support page of their
+club's admin (`/admin/support`). On `rate_limit` that page is refused too: tell the owner the
+request can be sent once the oldest of the day's requests is a day old, or they can write to
+support@carusela.com now. A seat that is not the owner or an admin cannot file one: ask the club's
+owner to send it. Anyone can write to support@carusela.com. There is always one of these.
 
 ## Bringing in a newsletter list
 
