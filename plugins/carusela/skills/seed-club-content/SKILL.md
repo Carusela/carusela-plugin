@@ -134,6 +134,49 @@ recordings, tutorials and AI agents all resolve the poster frame from the provid
 lessons and recordings resolve the runtime too. A value you pass is never overwritten by that, so
 only pass one if you mean to override.
 
+## Images that are already online: one call
+
+Covers that already sit at a public address, usually on the owner's previous platform, are not
+downloaded and uploaded again. Send them all to `attach_media` with `action: "import_from_urls"`
+and `images`, up to 20 per call:
+
+```
+attach_media  action: "import_from_urls"
+  images: [
+    { source_url: "https://old-platform.example/covers/course-1.jpg", image_surface: "course_cover",
+      set_on: { kind: "course", id: "<course id>" } },
+    { source_url: "https://old-platform.example/covers/ch-1.png", image_surface: "chapter_cover",
+      set_on: { kind: "chapter", course_id: "<course id>", chapter_name: "<name exactly as its lessons carry it>" } },
+    { source_url: "https://old-platform.example/covers/guide.jpg", set_on: { kind: "guide", id: "<guide id>" } }
+  ]
+```
+
+The server fetches each image, strips its metadata exactly as `finalize_upload` does and
+publishes it. With `set_on` it also sets it as the cover, so this replaces stage, PUT, finalize
+and the `manage_course` / `manage_chapter` / `manage_library_item` update for each image.
+`set_on.kind` is `course`, `chapter` (by `id`, or `course_id` with `chapter_name`), `guide`,
+`recording`, `tutorial`, `event` or `group`. A lesson thumbnail or an AI agent image is not a
+`set_on` kind: import without `set_on` and put the returned `public_url` on the row.
+
+Read every item in `images` in the answer; each one stands alone and a failed one did not stop
+the rest:
+
+- `ok: true` with `set_on.applied: true`: done.
+- `stage: "fetch"`: the address is private, internal, not https, redirects to another host, is
+  larger than 5 MiB or did not answer. Get another address or the file itself and upload it with
+  the steps below.
+- `stage: "clean"`: not a PNG, JPEG, GIF, WebP or vector SVG (an SVG address must end in `.svg`),
+  or its metadata could not be read. Convert it and upload it with the steps below.
+- `stage: "apply"`: the image is published (`public_url` is in the item) but setting it failed,
+  for example a chapter no lesson carries or a course organized with `save_course_structure`.
+  The item's `set_on.set_manually` names the exact write; fix the reason first.
+
+Repeating the call is safe: an image already published from the same bytes comes back with
+`already_published: true` and is not uploaded again, so a call cut off halfway is simply sent
+again.
+
+## Uploading a file from disk
+
 To upload an image rather than reference a video, use the two calls that strip its metadata,
 because a photo's GPS location would otherwise be public: `attach_media` with
 `action: "stage_upload"`, a filename and the destination as `image_surface` (`course_cover`,
