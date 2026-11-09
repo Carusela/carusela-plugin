@@ -14,6 +14,10 @@ it, attach it or rename it. Deleting removes the owner's work to make a report l
 **Never report a clean audit you did not run.** Each check below is a real call. If one could
 not run, say which and why.
 
+**Never leave a finding at "cannot be fixed".** When a fix the owner wants is beyond the tools,
+offer to send it to the Carusela team with `submit_support_request` (see `club-orientation`,
+Asking the team).
+
 ## Why this exists
 
 The failures this surface produces are quiet ones. Nothing errors. The tool returns success, the

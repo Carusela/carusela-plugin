@@ -144,7 +144,9 @@ obvious in the image.
 Refused here, with a real door elsewhere: tracking pixels and analytics ids (admin settings,
 ANALYTICS tab), the navigation rail (admin settings, CHROME tab), feature flags (admin,
 "יכולות הקהילה" tab), the mentor's avatar and its allowed link areas (brand editor, mentor
-section), and anything in Ring C, which has its own tools (see `build-sales-funnel`).
+section), and anything in Ring C, which has its own tools (see `build-sales-funnel`). If the owner
+wants a look or a change no door offers, never say it cannot be done: offer to send it to the
+Carusela team with `submit_support_request` (see `club-orientation`, Asking the team).
 
 ## After publishing
 
