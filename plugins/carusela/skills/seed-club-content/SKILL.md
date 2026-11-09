@@ -61,6 +61,28 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   code (Claude Code with a shell). If you cannot compute what it asks for, say so to the owner
   rather than recreating members by hand, and offer to send it to the Carusela team with
   `submit_support_request` (see `club-orientation`, Asking the team) so they can help move it.
+  A member export file needs no shell: see the next bullet.
+- **A member export file** (CSV or Excel from Schooler, Rav Messer, Teachable or a spreadsheet)
+  goes through the owner's upload in the club's admin, never row by row into `import_members` or
+  `stage_migration_records`. The rows go from the owner's browser to the club without passing
+  through the conversation, and the server hashes the manifest, so no shell is needed.
+  1. `create_migration_session`.
+  2. `get_migration_member_upload` with the `session_id`, then send the owner to its `upload_page`,
+     where they pick the file, map its columns with a preview and save.
+  3. Call it again once the owner says the file is saved. While rows are missing it says what to
+     do; when every row is staged it answers a ready, hashed `manifest`.
+  4. `validate_migration_manifest` with that `manifest` and `use_staged_records: true`, no `records`.
+  5. `plan_migration_import`, then the owner approves the plan in the admin.
+
+  A session holds one inventory, and saving a file replaces anything staged in it. Courses and
+  lessons go in a separate session, which can start only after this one is finalized or cancelled:
+  a club has one open session, and `create_migration_session` answering `created: false` returned
+  that open one, so check what it holds first. Leave `source_namespace` at its per-session default
+  (each member is then matched by email) unless the file's ids come from a named source account
+  that a later import should match by. A member file records no mailing consent: mailing contacts
+  go through `get_mailing_upload`, as below. If `tools/list` has no `get_migration_member_upload`,
+  the club's server predates it: use the bullets around this one.
+  `club-migration://contract` (`member_file`) has the same steps.
 - **A large account** (people, memberships, fields and messages each count as a record) does not
   fit `validate_migration_manifest`'s one-request byte limit. Stage the records first with
   `stage_migration_records`: chunks of up to 5,000, each at its offset from 0, with the bundle's
