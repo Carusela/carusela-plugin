@@ -50,7 +50,9 @@ min_tier_level: <a level the club defines>
 
 The same tool carries `is_published`, `is_featured` (recordings only) and `order`. An axis a
 type does not have is refused by name rather than ignored, so a change that cannot happen never
-reports success.
+reports success. Publishing a draft recording in a launched club also needs `notify_members:
+true|false`, because it sends the members the tier lets in a bell notice and an email: ask the
+owner, and set the tier first, so the notice reaches the audience of the new tier.
 
 **A course and its lessons are gated separately.** Setting the course does not cascade. If the
 owner wants a free preview lesson inside a paid course, that is exactly how you build it: course
