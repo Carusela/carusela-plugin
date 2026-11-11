@@ -187,6 +187,14 @@ stage the offers, build the page and the Funnel on draft offers, then apply the 
 one call. A page in the batch still has to pass its own publish readiness, judged against the
 proposed offers.
 
+On a launched club, publishing a draft course tells its members (a bell notice, and an email for
+the members it opens for), and the batch cannot publish one quietly. `apply_commerce_changes`
+refuses such a course in `course_ids` before writing anything and names how many members would
+hear. Ask the owner whether to announce it, publish the course first with
+`set_content_visibility` (kind course) or `manage_course` and that `notify_members` answer, then
+apply the batch. A course that is already published changes nothing there. Before Launch nobody is
+notified, so the one-call path above stands.
+
 ### 4. The Sales page
 
 ```
