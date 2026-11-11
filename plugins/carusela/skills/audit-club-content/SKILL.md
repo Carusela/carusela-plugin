@@ -61,7 +61,11 @@ them. If content sits behind a false flag, the finding names that tab: "switch X
 ```
 manage_category  action: "list"  scope: "recording"
 manage_category  action: "list"  scope: "course"
+manage_category  action: "list"  scope: "agent"
 ```
+
+The `agent` list is the AI agents' own categories, and its `used_by.ai_agents` count is how many
+agents carry each one.
 
 For each one, check whether anything actually carries it:
 
