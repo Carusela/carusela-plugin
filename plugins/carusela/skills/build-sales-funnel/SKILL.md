@@ -57,8 +57,9 @@ Carusela keeps the course-access button. `thankYou.nextAction` adds a second act
 button with its label when its href is that same `/courses/<id>` destination. For other primary
 purchases, `nextAction` replaces the way back to the club. Leave it out unless the owner named
 another destination. On a designed Thank You these actions stay on Carusela's bar, so the HTML
-draws no course button or link of its own: a link inside the page opens a new tab that keeps the
-page's sandbox and has no member session.
+draws no course button or link of its own. A link to a club path (`href="/invite"`) leaves the
+funnel in place of the page; any other link opens a new tab that keeps the page's sandbox and has
+no member session.
 
 **Never show the owner a page from a copy on their machine.** Look at every page inside Carusela
 and send the owner there: the Sales page at its `admin_url` (from `get_sales_page` or
@@ -272,8 +273,10 @@ Then make it the draft's only block with `edit_sales_page_draft`:
 - Size full-screen sections with `var(--carusela-viewport-height, 100vh)`, never bare `vh`,
   `dvh` or `svh`, which measure the frame and make the page scroll inside a fixed window.
 - The page runs in a sandbox with an opaque origin: no cookies, storage, club API or form posts.
-  `#section` links scroll, every other link opens a new tab. The browser title, description and
-  share image come from the draft's `title` and `seo`, not from the HTML.
+  `#section` links scroll. A link to a page of the club, written as a path with a single leading
+  slash (`href="/invite"`), opens that page in place of this one, which on a funnel step leaves
+  the funnel. Every other link, a full address of the club's own included, opens a new tab. The
+  browser title, description and share image come from the draft's `title` and `seo`, not from the HTML.
 - The same HTML always has the same hash and a stored page never changes. To change the page,
   upload the new HTML and save the draft with the new hash.
 
