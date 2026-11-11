@@ -98,13 +98,26 @@ user has not told you what the new wording should be, get it from them before yo
 the ring being ungated means is that a wrong word is cheap to correct, not that nobody needs to
 see it.
 
+**A club with language experiences has words per language.** When `get_config` returns
+`language_experiences` with `enabled: true`, members read their own language's page headings and
+copy fragments, not the club's base copy. Send `language: "he"` or `language: "en"` with
+`page_headings` or `copy_tokens`, and send one language per call. Without `language`, the tool
+refuses and names the languages; that refusal is correct, because the base copy would change
+where no member reads it. `language` goes only with those two fields: the name, tagline, mentor
+text and links are one per club and go in a separate call without it. Email copy keys
+(`memberInvite.*`, `purchaseWelcome.*`) carry their language in the key, so send them without
+`language`. Read the current values in `language_experiences.languages.<he|en>` first.
+
 **Ring B is design.** Colours, brand assets and the home page's block composition.
 `preview_design_change` publishes them in the call itself and returns exactly what changed, from
 what to what. Despite its name it is not a preview. A design draft somebody saved in the admin and
 did not publish goes live with it and shows in the same diff; `get_config` shows whether one
 exists. `publish_design` takes no argument and publishes only that admin draft, when the owner
 asks. The home page's `home_blocks` is a whole-list replace: read the current list with
-`get_config` and send all of it, because a block you leave out is removed. To undo, call
+`get_config` and send all of it, because a block you leave out is removed. In a club with
+language experiences enabled, each language has its own composition: send `language` with
+`home_blocks`, and read that language's list in `language_experiences.languages.<he|en>.home_blocks`
+instead of the top-level `home_blocks`. To undo, call
 `preview_design_change` again with the old values, or revert a version in the admin versions tab
 (`/admin?tab=brand-versions`).
 See `brand-a-club`.
