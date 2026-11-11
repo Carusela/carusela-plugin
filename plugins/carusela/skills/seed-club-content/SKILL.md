@@ -25,6 +25,19 @@ pre-launch club, so a draft hides the import from the one person who wanted it, 
 watching the club fill up sees an empty screen. `manage_course` and `manage_library_item` publish
 on create while the club has not launched; let them.
 
+**Never publish a recording in a launched club without asking the owner whether to tell the
+members.** Publishing a recording there is a message: every member its tier lets in gets a bell
+notice and an email about ten minutes later, and `manage_library_item` also puts an announcement
+banner on the home page. So `manage_library_item` (a create with `is_published: true`, or an
+update that publishes a draft) and `set_content_visibility` (`is_published: true` on a draft
+recording) refuse the write without `notify_members`, and the refusal says how many members would
+be notified. That refusal is the question to put to the owner, not an obstacle to route around:
+pass `notify_members: true` only when the owner said to tell the members, and
+`notify_members: false` to publish quietly, with no notice, no email and no banner. A quiet
+publish stays quiet if the recording is hidden and published again from the admin screens. The
+result's `member_notice` says what went out: `bell_notices`, `emails_queued` and
+`banner_announcement_id`. Hiding the recording before the emails leave withdraws the unsent ones.
+
 **Never write a second copy because the first one refused a field.** A refused field means that
 kind has no column for it. Find where the value belongs; do not create a different content type
 to hold it.
@@ -259,7 +272,8 @@ is two calls per guide and there is no way around it today.
 **The `is_published` row is a DEFAULT, not a rule.** All four accept the field on create, so a
 batch nobody has reviewed is staged by passing `is_published: false` explicitly. Omit it and
 before Launch all four go live; after Launch you get the per-kind row above, where a guide and an
-AI agent go live the moment they are created and a recording and a tutorial do not.
+AI agent go live the moment they are created and a recording and a tutorial do not. Publishing
+a recording after Launch also needs `notify_members`, above.
 
 The same split applies to courses. `manage_course` publishes a created course, and the lessons
 created with it, while the club has not launched, and creates a draft afterwards. Its result says
@@ -314,7 +328,8 @@ wrong and both look right.
 ## Publishing and ordering
 
 `set_content_visibility` handles `is_published`, `min_tier_level`, `is_featured` (recordings
-only) and `order`.
+only) and `order`. Publishing a draft recording with it in a launched club needs
+`notify_members: true|false`, exactly as with `manage_library_item`; this tool writes no banner.
 
 `order` is **whole-collection**: it must contain every id in that collection, in the order you
 want. A partial list is refused. One call with the full list sets the order; you do not order
@@ -430,5 +445,6 @@ fix, and move on to closing out the rest of the report.
 
 At the end, say how many of each type, how many published versus draft **and why**. Before
 Launch the answer is "published, because the club is not live yet", and an owner who is not told
-that will assume somebody has already seen it. Say what was gated to which tier, and **what had
-no source**. If a category came out empty, say so rather than letting the owner find it.
+that will assume somebody has already seen it. After Launch, say for every published recording
+whether the members were told, from `member_notice`: how many notices and emails, and whether a
+banner went up. Say what was gated to which tier, and **what had no source**. If a category came out empty, say so rather than letting the owner find it.
