@@ -56,7 +56,8 @@ member should see, like `חדש`.
 1. `list_my_clubs`, `get_config`, `get_club_overview`. Know the club before writing to it.
 2. Decide the shape on paper first: which courses, which chapters, what belongs in the library
    instead. Show it to the owner. Restructuring 70 lessons afterwards is many calls.
-3. Create categories (`manage_category`) before the content that references them.
+3. Create categories (`manage_category`) before the content that references them, including
+   `scope: "agent"` before any AI agent: an agent is refused until its category exists.
 4. Create content.
 5. Publish and gate deliberately.
 6. `audit-club-content`.
@@ -295,7 +296,21 @@ against a `"לייבים מלאים"` category attaches to nothing, and nothing 
 categories, check they are not empty — `audit-club-content` does this.
 
 `scope: "recording"` is the shared pool for recordings, tutorials, guides and groups.
-`scope: "course"` is the separate axis courses use. There is no third pool.
+`scope: "course"` is the separate axis courses use. There is no third content pool.
+
+**AI agents have their own category list**, a separate table: `scope: "agent"`. An agent's
+`category` must name one of these exactly, and a fresh club has none, so `manage_library_item`
+refuses every agent until you create one:
+
+```
+manage_category  scope: "agent"  action: "create"  name: "כלים"
+manage_library_item  kind: "ai_agent"  action: "create"  title: "..."  category: "כלים"
+```
+
+A shared-pool category with the same name does not count: the agents page never reads it.
+`scope: "agent"` also supports `list`, `rename` (it moves every agent carrying the old name),
+`delete` (confirm first, like the other scopes) and `reorder` with every agent category id in the
+new order. `reorder` works for this scope only.
 
 ## `difficulty` is a closed set
 

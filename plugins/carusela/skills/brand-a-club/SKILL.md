@@ -38,6 +38,15 @@ Read `get_config` first, and keep that read: it is what you send back to undo.
 - **`publish_design` takes no argument.** It publishes a draft somebody saved in the admin brand
   or home screen. Call it only when the owner asks for that admin draft to go live.
 
+- **A club with language experiences has a home page per language.** When `get_config` returns
+  `language_experiences.enabled: true`, members see their language's own composition, and the
+  top-level `home_blocks` is not what they see. Send `language: "he"` or `language: "en"` with
+  `home_blocks`, and nothing else in that call: colours and assets are one per club and go in a
+  separate call without `language`. Read and send back the whole list from
+  `language_experiences.languages.<language>.home_blocks`. An empty list is refused with
+  `language`, because a language's empty home stays empty instead of showing the default. Without
+  `language`, `home_blocks` is refused and the refusal names the languages.
+
 There is no look-first mode for design over MCP: whatever `preview_design_change` receives goes
 live. An owner who wants to try a look before members see it saves a draft in the admin brand
 screen, and `publish_design` publishes it when they ask.
@@ -185,7 +194,9 @@ Every publish is a version. Two ways back:
   live before the change, because the diff is block by block and the field replaces the list
   whole. Take it from the `get_config` read before the change only when its `home_blocks_source`
   was `published`; when it was `draft`, that list was an unpublished admin draft, and the live one
-  is `published.pages.home.blocks` in the same read.
+  is `published.pages.home.blocks` in the same read. For one language's composition, send the
+  same `language` again with that language's list from the earlier read: the live one is
+  `published.localization.variants.<language>.pages.home.blocks`.
 - **Revert a version in the admin.** The history is its own tab, `/admin?tab=brand-versions`
   ("גרסאות"). Restoring a version there loads that whole
   configuration into a draft that the owner then publishes, so copy and mentor edits published
