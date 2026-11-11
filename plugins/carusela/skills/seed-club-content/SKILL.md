@@ -16,7 +16,9 @@ than a club with a gap the owner knows about.
 
 **Never publish a batch before the owner has seen it, in a club that has already launched.**
 There the create is a publication: members are in, and a course that appears while you are still
-building it has been seen. Create, review, then publish.
+building it has been seen. Create, review, then publish. And publishing a course or a recording
+there tells the members about it, so the owner also decides whether they hear about it: see
+"Publishing tells the members" below.
 
 Before Launch this does not apply, and following it anyway is the mistake. Nobody can reach a
 pre-launch club, so a draft hides the import from the one person who wanted it, and the owner
@@ -326,14 +328,43 @@ wrong and both look right.
 ## Publishing and ordering
 
 `set_content_visibility` handles `is_published`, `min_tier_level`, `is_featured` (recordings
-only) and `order`. Publishing a draft recording with it in a launched club needs
-`notify_members: true|false`, exactly as with `manage_library_item`; this tool writes no banner.
+only) and `order`. Publishing a draft course or recording with it in a launched club needs
+`notify_members: true|false`, exactly as with `manage_course` and `manage_library_item`; this
+tool writes no banner.
 
 `order` is **whole-collection**: it must contain every id in that collection, in the order you
 want. A partial list is refused. One call with the full list sets the order; you do not order
 items one at a time.
 
 Groups have no published state at all. `is_private` is their only visibility axis.
+
+## Publishing tells the members
+
+In a club that has launched, the first publish of a **course** rings every member the catalog
+shows it to with a bell notice, and emails the members it opens for about ten minutes later. The
+first publish of a **recording** sends every member its tier lets in a bell notice and an email,
+and `manage_library_item` also adds a home page banner. So `manage_course`,
+`set_content_visibility` and `manage_library_item` take `notify_members` on any write that
+publishes a draft course or recording:
+
+- **Omitted**, the publish is refused before anything is written, and the refusal says how many
+  members would be rung and mailed. That is the number to show the owner.
+- **`true`** tells them. **`false`** publishes quietly: no new-course notice, no email, and it stays
+  quiet if it is later hidden and published again from the admin screens.
+- The result's `member_notice` says what was sent: `bell_notices`, `emails_queued`, and for a
+  course `announced_at` (a course hidden until a later date is announced when it opens) and
+  `course_opened_notice_at`.
+
+Ask the owner which they want, once per batch, and never guess `true`. A quiet publish does not
+silence everything: a course dated to open later still sends the members who hold it a "course
+opened" notice at that moment while its `notify_on_release` is on. When the owner wants that
+silent too, set `notify_on_release: false` in `manage_course`'s `schedule`.
+
+Before Launch nobody is told and nothing asks: publish as above. A club whose server does not
+have the course choice yet publishes a course the old way and tells its members: `set_content_visibility`
+answers that `notify_members` applies to recordings only, and a `manage_course` publish comes back
+without `member_notice`. Ask the owner before publishing a course there, and say in the report
+that the members were told.
 
 ## Open dates
 
