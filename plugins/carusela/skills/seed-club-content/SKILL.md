@@ -328,8 +328,9 @@ wrong and both look right.
 ## Publishing and ordering
 
 `set_content_visibility` handles `is_published`, `min_tier_level`, `is_featured` (recordings
-only) and `order`. Publishing a draft recording with it in a launched club needs
-`notify_members: true|false`, exactly as with `manage_library_item`; this tool writes no banner.
+only) and `order`. Publishing a draft course or recording with it in a launched club needs
+`notify_members: true|false`, exactly as with `manage_course` and `manage_library_item`; this
+tool writes no banner.
 
 `order` is **whole-collection**: it must contain every id in that collection, in the order you
 want. A partial list is refused. One call with the full list sets the order; you do not order
