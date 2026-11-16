@@ -87,6 +87,7 @@ Three read-only calls. They cost nothing and they answer most of what you were a
 | Build a Sales page and its Funnel | see `build-sales-funnel` |
 | Refund a member's purchase or subscription charge | `list_club_purchases`, then `refund_member_purchase` |
 | See what has been done | `get_audit_log` |
+| Ask how Carusela works, where a setting is, or whether something is supported or coming | `search_carusela_help` first, before answering from memory; it needs no club (see `onboard-to-carusela`) |
 | Ask the Carusela team for something no tool does, or report something broken | `submit_support_request` (see Asking the team below) |
 
 ## The three rings, in one paragraph each
