@@ -135,7 +135,8 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   courses, a connected import or staged mailing rows refuses it.
   1. `create_migration_session`, for the mail alone. A club has one open session, and an answer of
      `created: false` returned that open one: check what it holds, and finish it, or cancel it with
-     `cancel_migration_session` once the owner agrees, before you send any mail.
+     `cancel_migration_session` once the owner agrees, before you send any mail. If it is refused
+     because another admin holds the open session, tell the owner.
   2. Rav Messer's `get_account`: keep its account id for step 6.
   3. Rav Messer's `list_series`, once. Its answer goes to `stage_rav_messer_mail_part` with
      `kind: "series"` and `source_key: "all"`.
@@ -147,16 +148,22 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
      for every `message_id` a series' send step names in `list_series`' `logic_json`.
      `list_messages` does not list a series' messages, so take those ids from `logic_json`. Each
      answer goes with `kind: "message"` and the id as `source_key`.
-  6. `finish_rav_messer_mail_upload` with the `session_id` and the account id. Calling it again is
-     safe. When it answers `staged: false`, its `next` says which of three cases it is:
+  6. `finish_rav_messer_mail_upload` with the `session_id` and the account id. Once it has answered
+     a manifest, calling it again is safe: it rebuilds the same records from the same parts. When it
+     answers `staged: false`, read `unsealed` and `next`:
+     - `unsealed: false`: the session already holds an inventory staged from these parts, and
+       nothing in them can change. Cancel the session with `cancel_migration_session` once the
+       owner agrees, and send the mail again in a new one.
      - A document is missing, unreadable or stray: send what it asks for, remove a document sent
        by mistake or a page past the end of the list with `discard_rav_messer_mail_document`, and
-       call it again.
-     - A record cannot be imported (Rav Messer's own content, such as a body too long or text that
-       cannot be stored): sending it again gives the same result. Tell the owner which messages
-       the problems name.
-     - A `reason` and no problems: nothing is importable. Tell the owner what it says, including
-       each series `coverage` sets aside, and stop.
+       call it again. A document that is unreadable, or whose answer had `status` false, is asked
+       of Rav Messer again and sent from part 0 with `replace_document: true`.
+     - A record cannot be imported (Rav Messer's own content that a mail record cannot hold):
+       sending it again gives the same result. Tell the owner which messages the problems name,
+       and how many in all (`problem_count`: the answer lists the first 50).
+     - A `reason` and no problems (`mail_snapshot_empty` or `no_importable_mail`): nothing is
+       importable, and the server has discarded the upload. Tell the owner what `next` says,
+       including each series `coverage` sets aside, and stop.
   7. `validate_migration_manifest` with the `session_id`, the `manifest` it answered and
      `use_staged_records: true`, then `plan_migration_import`. The rest is the contract's
      workflow: the owner approves the plan in the admin.
