@@ -133,21 +133,30 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   rewrite, summarize or reformat a Rav Messer answer: pass each one on as it came, and the server
   builds the records. The mail takes a session of its own: a session that already holds members,
   courses, a connected import or staged mailing rows refuses it.
-  1. `create_migration_session`, for the mail alone.
+  1. `create_migration_session`, for the mail alone. A club has one open session, and an answer of
+     `created: false` returned that open one: check what it holds, and finish it, or cancel it with
+     `cancel_migration_session` once the owner agrees, before you send any mail.
   2. Rav Messer's `get_account`: keep its account id for step 6.
   3. Rav Messer's `list_series`, once. Its answer goes to `stage_rav_messer_mail_part` with
      `kind: "series"` and `source_key: "all"`.
   4. Rav Messer's `list_messages` from offset 0, page by page, until a page holds fewer than its
      limit. Each page goes with `kind: "messages_page"`, its offset as text in `source_key` (`"0"`,
      then each page's offset plus its count), and the limit it was asked with as `page_limit` (at
-     most 1000).
+     most 1000). `page_limit` goes with a `messages_page` and nothing else.
   5. Rav Messer's `get_message`, with `message_id` as a number, for every message a page lists and
      for every `message_id` a series' send step names in `list_series`' `logic_json`.
      `list_messages` does not list a series' messages, so take those ids from `logic_json`. Each
      answer goes with `kind: "message"` and the id as `source_key`.
-  6. `finish_rav_messer_mail_upload` with the `session_id` and the account id. When it names
-     problems, send what it asks for, remove a document sent by mistake with
-     `discard_rav_messer_mail_document`, and call it again. Calling it again is safe.
+  6. `finish_rav_messer_mail_upload` with the `session_id` and the account id. Calling it again is
+     safe. When it answers `staged: false`, its `next` says which of three cases it is:
+     - A document is missing, unreadable or stray: send what it asks for, remove a document sent
+       by mistake or a page past the end of the list with `discard_rav_messer_mail_document`, and
+       call it again.
+     - A record cannot be imported (Rav Messer's own content, such as a body too long or text that
+       cannot be stored): sending it again gives the same result. Tell the owner which messages
+       the problems name.
+     - A `reason` and no problems: nothing is importable. Tell the owner what it says, including
+       each series `coverage` sets aside, and stop.
   7. `validate_migration_manifest` with the `session_id`, the `manifest` it answered and
      `use_staged_records: true`, then `plan_migration_import`. The rest is the contract's
      workflow: the owner approves the plan in the admin.
@@ -155,7 +164,12 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   Send each answer's text unchanged, cut into parts of about 30,000 characters, with `part_index`
   from 0 and the same `part_count` on every part: the parts joined in order must be the answer
   exactly. A part whose answer was lost is sent again as it was, and the same part again changes
-  nothing. To send a whole document again, send its part 0 with `replace_document: true`.
+  nothing. To send a whole document again, send its part 0 with `replace_document: true`. Do not
+  send a Rav Messer answer whose `status` is false: ask Rav Messer again. A session holds at most
+  4,096 parts and 32 MiB, and one message at most 2,000,000 characters: a message over that cannot
+  be imported, so tell the owner which one. Once finish has answered a manifest, the upload is
+  sealed and takes no more parts: to change it, cancel the session and send the mail again in a
+  new one.
 
   Tell the owner what they get. The mail lands as drafts and an archive, and nothing is sent to
   anyone. A single mailing Rav Messer counted as sent is kept as sent. Rav Messer gives no subject
