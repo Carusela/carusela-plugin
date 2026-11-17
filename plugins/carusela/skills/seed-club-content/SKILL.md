@@ -1,6 +1,6 @@
 ---
 name: seed-club-content
-description: Load a club's courses, recordings, tutorials, guides and AI agents through the Carusela MCP without losing fields or publishing things nobody reviewed. Use when somebody wants to import, migrate, bulk-create or restructure club content, or asks to turn an existing site, syllabus, video library or another course platform (Schooler, Rav Messer, Teachable) into a club.
+description: Load a club's courses, recordings, tutorials, guides and AI agents through the Carusela MCP without losing fields or publishing things nobody reviewed. Use when somebody wants to import, migrate, bulk-create or restructure club content, or asks to turn an existing site, syllabus, video library or another course platform (Schooler, Rav Messer, Teachable) into a club, including moving its mail (single mailings and series) from Rav Messer.
 ---
 
 # Seed club content
@@ -128,6 +128,43 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   `upload_page`, never row by row through the conversation; a short list of a few hundred can use
   `import_mailing_contacts`, or `stage_mailing_contacts` in a club that already sends. See
   `club-orientation`.
+- **Mail from Rav Messer** (single mailings and series), when this conversation can also call Rav
+  Messer's own MCP. Never build `mail_series` or `mail_messages` records yourself, and never
+  rewrite, summarize or reformat a Rav Messer answer: pass each one on as it came, and the server
+  builds the records. The mail takes a session of its own: a session that already holds members,
+  courses, a connected import or staged mailing rows refuses it.
+  1. `create_migration_session`, for the mail alone.
+  2. Rav Messer's `get_account`: keep its account id for step 6.
+  3. Rav Messer's `list_series`, once. Its answer goes to `stage_rav_messer_mail_part` with
+     `kind: "series"` and `source_key: "all"`.
+  4. Rav Messer's `list_messages` from offset 0, page by page, until a page holds fewer than its
+     limit. Each page goes with `kind: "messages_page"`, its offset as text in `source_key` (`"0"`,
+     then each page's offset plus its count), and the limit it was asked with as `page_limit` (at
+     most 1000).
+  5. Rav Messer's `get_message`, with `message_id` as a number, for every message a page lists and
+     for every `message_id` a series' send step names in `list_series`' `logic_json`.
+     `list_messages` does not list a series' messages, so take those ids from `logic_json`. Each
+     answer goes with `kind: "message"` and the id as `source_key`.
+  6. `finish_rav_messer_mail_upload` with the `session_id` and the account id. When it names
+     problems, send what it asks for, remove a document sent by mistake with
+     `discard_rav_messer_mail_document`, and call it again. Calling it again is safe.
+  7. `validate_migration_manifest` with the `session_id`, the `manifest` it answered and
+     `use_staged_records: true`, then `plan_migration_import`. The rest is the contract's
+     workflow: the owner approves the plan in the admin.
+
+  Send each answer's text unchanged, cut into parts of about 30,000 characters, with `part_index`
+  from 0 and the same `part_count` on every part: the parts joined in order must be the answer
+  exactly. A part whose answer was lost is sent again as it was, and the same part again changes
+  nothing. To send a whole document again, send its part 0 with `replace_document: true`.
+
+  Tell the owner what they get. The mail lands as drafts and an archive, and nothing is sent to
+  anyone. A single mailing Rav Messer counted as sent is kept as sent. Rav Messer gives no subject
+  for a series' message, so each series step takes its step name as a draft subject, marked for the
+  owner to check before the series runs. No screen shows the imported mail yet, so do not send the
+  owner looking for it. If `tools/list` has no `stage_rav_messer_mail_part`, the club's server
+  predates it: say so, and offer to send the move to the Carusela team with
+  `submit_support_request` rather than recreating the mail by hand.
+  `club-migration://contract` (`rav_messer_mail`) has the same steps.
 - **Payments never move.** No card numbers, CardCom tokens, Schooler credentials or active
   subscriptions go into Carusela by any path. A member's paid access in the new club comes from a
   fresh checkout; say that to the owner up front.

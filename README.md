@@ -35,7 +35,7 @@ The eight skills are the part that stops that.
 | skill | what it is for |
 |---|---|
 | `club-orientation` | the map, and which refusals are correct so Claude stops trying to route around them |
-| `seed-club-content` | importing or bulk-creating content without losing fields or publishing early |
+| `seed-club-content` | importing or bulk-creating content without losing fields or publishing early, and moving mail from Rav Messer |
 | `brand-a-club` | colours, logo, favicon and social card, published in the call you ask for them |
 | `gate-club-access` | what each access tier reaches |
 | `build-sales-funnel` | offers, coupons, a sales page (blocks, your own designed HTML page, or your own site) and its funnel, live when you ask for them and one request away from the previous version |
