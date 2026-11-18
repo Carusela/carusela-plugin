@@ -161,9 +161,10 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
      - A record cannot be imported (Rav Messer's own content that a mail record cannot hold):
        sending it again gives the same result. Tell the owner which messages the problems name,
        and how many in all (`problem_count`: the answer lists the first 50).
-     - A `reason` and no problems (`mail_snapshot_empty` or `no_importable_mail`): nothing is
-       importable, and the server has discarded the upload. Tell the owner what `next` says,
-       including each series `coverage` sets aside, and stop.
+     - A `reason` and no problems (`mail_snapshot_empty`, `no_importable_mail`, or
+       `too_many_records` when the mail makes more records than one session holds): nothing was
+       staged, and the server has discarded the upload, so sending it again gives the same answer.
+       Tell the owner what `next` says, including each series `coverage` sets aside, and stop.
   7. `validate_migration_manifest` with the `session_id`, the `manifest` it answered and
      `use_staged_records: true`, then `plan_migration_import`. The rest is the contract's
      workflow: the owner approves the plan in the admin.
