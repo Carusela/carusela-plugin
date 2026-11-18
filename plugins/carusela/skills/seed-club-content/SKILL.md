@@ -131,8 +131,9 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
 - **Mail from Rav Messer** (single mailings and series), when this conversation can also call Rav
   Messer's own MCP. Never build `mail_series` or `mail_messages` records yourself, and never
   rewrite, summarize or reformat a Rav Messer answer: pass each one on as it came, and the server
-  builds the records. The mail takes a session of its own: a session that already holds members,
-  courses, a connected import or staged mailing rows refuses it.
+  builds the records. The mail takes a session of its own: a session that already holds other
+  import work (a member file, a bundle, a connected import, staged mailing rows, draft offers or
+  media) refuses it.
   1. `create_migration_session`, for the mail alone. A club has one open session, and an answer of
      `created: false` returned that open one: check what it holds, and finish it, or cancel it with
      `cancel_migration_session` once the owner agrees, before you send any mail. If it is refused
@@ -149,14 +150,16 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
      `list_messages` does not list a series' messages, so take those ids from `logic_json`. Each
      answer goes with `kind: "message"` and the id as `source_key`.
   6. `finish_rav_messer_mail_upload` with the `session_id` and the account id. Once it has answered
-     a manifest, calling it again is safe: it rebuilds the same records from the same parts. When it
-     answers `staged: false`, read `unsealed` and `next`:
+     a manifest, calling it again is safe while the session is still a draft: it rebuilds the same
+     records from the same parts. After that it answers `session_not_draft`. When it answers
+     `staged: false`, read `unsealed` and `next`:
      - `unsealed: false`: the session already holds an inventory staged from these parts, and
        nothing in them can change. Cancel the session with `cancel_migration_session` once the
        owner agrees, and send the mail again in a new one.
      - A document is missing, unreadable or stray: send what it asks for, remove a document sent
        by mistake or a page past the end of the list with `discard_rav_messer_mail_document`, and
-       call it again. A document that is unreadable, or whose answer had `status` false, is asked
+       call it again. The answer lists the first 50 problems; `problem_count` has them all, so call
+       it again until none is left. A document that is unreadable, or whose answer had `status` false, is asked
        of Rav Messer again and sent from part 0 with `replace_document: true`.
      - A record cannot be imported (Rav Messer's own content that a mail record cannot hold):
        sending it again gives the same result. Tell the owner which messages the problems name,
@@ -170,8 +173,8 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
      workflow: the owner approves the plan in the admin.
 
   Send each answer's text unchanged, cut into parts of about 30,000 characters, with `part_index`
-  from 0 and the same `part_count` on every part: the parts joined in order must be the answer
-  exactly. A part whose answer was lost is sent again as it was, and the same part again changes
+  from 0 and the same `part_count` (at most 256) on every part: the parts joined in order must be
+  the answer exactly. A part whose answer was lost is sent again as it was, and the same part again changes
   nothing. To send a whole document again, send its part 0 with `replace_document: true`. Do not
   send a Rav Messer answer whose `status` is false: ask Rav Messer again. A session holds at most
   4,096 parts and 32 MiB, and one message at most 2,000,000 characters: a message over that cannot
@@ -183,7 +186,11 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   anyone. A single mailing Rav Messer counted as sent is kept as sent. Rav Messer gives no subject
   for a series' message, so each series step takes its step name as a draft subject, marked for the
   owner to check before the series runs. No screen shows the imported mail yet, so do not send the
-  owner looking for it. If `tools/list` has no `stage_rav_messer_mail_part`, the club's server
+  owner looking for it: once the import is done, show it yourself. `get_imported_mail` lists the
+  series and messages (with a `series_id`, one series' steps in order; with a `message_id`, one
+  message and what the import took out of its body), and `preview_email` with
+  `imported_message_id` renders an imported email. A message whose findings include
+  `subject_from_step_name` is one whose subject the owner should check. If `tools/list` has no `stage_rav_messer_mail_part`, the club's server
   predates it: say so, and offer to send the move to the Carusela team with
   `submit_support_request` rather than recreating the mail by hand.
   `club-migration://contract` (`rav_messer_mail`) has the same steps.
