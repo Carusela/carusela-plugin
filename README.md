@@ -30,11 +30,12 @@ The connection on its own gives Claude the tools. It does not tell Claude how th
 shaped, so it guesses, and several of the natural guesses are quietly wrong: content created live
 when you wanted a draft, a category that looks attached and is not, a tier that does not exist.
 
-The eight skills are the part that stops that.
+The nine skills are the part that stops that.
 
 | skill | what it is for |
 |---|---|
 | `club-orientation` | the map, and which refusals are correct so Claude stops trying to route around them |
+| `onboard-to-carusela` | a personal onboarding assistant: reads where your club stands, answers how-to questions from Carusela's own help, and takes you to the next step |
 | `seed-club-content` | importing or bulk-creating content without losing fields or publishing early, and moving mail from Rav Messer |
 | `brand-a-club` | colours, logo, favicon and social card, published in the call you ask for them |
 | `gate-club-access` | what each access tier reaches |

@@ -1,6 +1,6 @@
 # Carusela for Claude Code
 
-Run your club from Claude Code. This plugin connects the Carusela MCP and adds eight skills that
+Run your club from Claude Code. This plugin connects the Carusela MCP and adds nine skills that
 keep an agent inside what the surface actually allows, so it stops guessing at fields that are
 refused on purpose and stops publishing things nobody asked for.
 
@@ -23,6 +23,7 @@ If your account reaches more than one club, every tool needs a `club_id`. Ask Cl
 | skill | when it fires |
 |---|---|
 | `club-orientation` | before the first write. The tool map, the three rings, and what MCP will never do |
+| `onboard-to-carusela` | a new owner, or "where do I start / what next": reads the setup state, answers product questions from `search_carusela_help`, routes to the right skill |
 | `seed-club-content` | importing or bulk-creating courses, recordings, tutorials, guides and agents, and moving mail from Rav Messer |
 | `brand-a-club` | colours, logo, favicon, social card, published in the same call |
 | `gate-club-access` | deciding what each access tier reaches |
