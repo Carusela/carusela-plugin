@@ -89,6 +89,7 @@ not carry a capability, that is the answer: a person with that seat does it.
 list_my_clubs             -> which club, and the id for every later call
 get_commerce_readiness    -> can this club take money yet, and if not, why
 get_commerce_catalog      -> courses, member tiers, offers and coupons, drafts included
+get_course_offers         -> one course's offers, its course page price, and where each sells
 list_sales_pages          -> what already exists, and every page id
 get_landing_page_catalog  -> the closed block vocabulary a page is built from
 ```
@@ -153,6 +154,24 @@ retry the same request), and `values` holds the complete desired state, never a 
 | `allowsInstalments`, `maxInstalments` | one-time offers only; `maxInstalments` 2 to 12 and only with instalments on |
 | `isPublished` | the state once applied, default true |
 | `orderBumpOfferId` | the offer's own single order bump, or null |
+| `isCoursePrimary` | a one-time course offer only: `true` makes it the price on the course's card, lock screen and course page; omit to keep the current value |
+
+**Which price the course page shows.** A course can have several one-time offers: its own
+price, a cheaper one used only as an order bump, a launch price. Exactly one of them is the
+course page offer, shown on the course's card, lock screen and course page; every other offer
+sells only where a Sales page, a Funnel step, an Order bump or a parent offer uses it, each at
+its own price. `get_course_offers { course_id }` lists the course's offers, which one the course
+page shows (`course_page_offer_id`) and where each one sells (`used_by`). When the course page
+shows the wrong price (often a bump's cheaper offer), stage `manage_offer` for the offer that
+should show, with its `resource_id`, its current values and `isCoursePrimary: true`, then
+`apply_commerce_changes`: the slot leaves the other offer in the same write, and that offer needs
+no change. Never fix it by changing the bump: an order bump always charges its own offer's price,
+whichever offer the course page shows. This is the owner's choice and Carusela approves nothing.
+The course page shows that offer's price only while it is published: `get_course_offers` says
+`course_page: "held_unpublished"` when it is not. `isCoursePrimary` never goes in the same draft
+that moves an offer to another course or interval: to move the current course page offer, stage
+`isCoursePrimary: false` for it on its own and apply that first; to give a moved offer the slot,
+apply the move first. Read the course back with `get_course_offers` after apply.
 
 `manage_coupon` values: `code` (stored in upper case), `discountType` `percent` or `fixed`,
 `discountValue` (a percent up to 100, or fixed agorot), `maxUses` or null, `validFrom` and

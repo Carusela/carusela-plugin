@@ -86,6 +86,7 @@ Three read-only calls. They cost nothing and they answer most of what you were a
 | See the mail imported from another mailing system | `get_imported_mail`, and `preview_email` with `imported_message_id` for one email. Drafts and an archive: nothing sends them |
 | See what is for sale, and whether the club can sell | `get_commerce_catalog`, `get_commerce_changes`, `get_commerce_readiness` |
 | Set a price, an offer, a trial, a coupon or a member tier | `manage_offer`, `manage_coupon`, `manage_membership_tier`, then `apply_commerce_changes` |
+| Choose which price a course page shows, or see where each offer sells | `get_course_offers`, then `manage_offer` with `isCoursePrimary: true` and `apply_commerce_changes` |
 | Build a Sales page and its Funnel | see `build-sales-funnel` |
 | Refund a member's purchase or subscription charge | `list_club_purchases`, then `refund_member_purchase` |
 | See what has been done | `get_audit_log` |
@@ -148,6 +149,12 @@ or `yearly`, a one-time offer has no trial days, instalments are allowed only on
 and then need 2 to 12. A percent coupon cannot exceed 100; a fixed one is in agorot. A member
 tier here is the club's own membership level, not the platform package the club pays Carusela
 for.
+
+**The course page price is the owner's choice.** Of a course's one-time offers, one is shown on
+its card, lock screen and course page (`isCoursePrimary`). An order bump always charges its own
+offer's price, whatever the course page shows, so a course page showing a bump's cheaper price
+is fixed by switching `isCoursePrimary` on the right offer, never by changing the bump and never
+by asking Carusela: no approval is involved. `build-sales-funnel` has the steps.
 
 **What stays human-only in Ring C: connecting the club's CardCom terminal.** A person does it by
 hand in the admin payments tab, `/admin?tab=payments`, and the terminal credentials never pass
