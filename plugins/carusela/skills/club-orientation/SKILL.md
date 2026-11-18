@@ -84,7 +84,7 @@ Three read-only calls. They cost nothing and they answer most of what you were a
 | Bring in a newsletter list | A file, or over about 500 rows: `get_mailing_upload`. A short list: `import_mailing_contacts`, or `stage_mailing_contacts` when the club already sends (see below) |
 | Bring in mailings and series from Rav Messer | `stage_rav_messer_mail_part`, then `finish_rav_messer_mail_upload`, in a session of their own (see `seed-club-content`, Moving a club from another platform) |
 | See the mail imported from another mailing system | `get_imported_mail`, and `preview_email` with `imported_message_id` for one email. Drafts and an archive: nothing sends them |
-| Copy the images of imported mail into the club | `copy_imported_mail_images`, called until `left` is 0; each email's `image_findings` names what it could not copy |
+| Copy the images of imported mail into the club | `copy_imported_mail_images`, called until `done` is true; each email's `image_findings` names what it could not copy |
 | See what is for sale, and whether the club can sell | `get_commerce_catalog`, `get_commerce_changes`, `get_commerce_readiness` |
 | Set a price, an offer, a trial, a coupon or a member tier | `manage_offer`, `manage_coupon`, `manage_membership_tier`, then `apply_commerce_changes` |
 | Choose which price a course page shows, or see where each offer sells | `get_course_offers`, then `manage_offer` with `isCoursePrimary: true` and `apply_commerce_changes` |
