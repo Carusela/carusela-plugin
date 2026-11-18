@@ -167,7 +167,10 @@ should show, with its `resource_id`, its current values and `isCoursePrimary: tr
 `apply_commerce_changes`: the slot leaves the other offer in the same write, and that offer needs
 no change. Never fix it by changing the bump: an order bump always charges its own offer's price,
 whichever offer the course page shows. This is the owner's choice and Carusela approves nothing.
-`isCoursePrimary` cannot go in the same draft that moves an offer to another course or interval;
+The course page shows that offer's price only while it is published: `get_course_offers` says
+`course_page: "held_unpublished"` when it is not. `isCoursePrimary` never goes in the same draft
+that moves an offer to another course or interval: to move the current course page offer, stage
+`isCoursePrimary: false` for it on its own and apply that first; to give a moved offer the slot,
 apply the move first. Read the course back with `get_course_offers` after apply.
 
 `manage_coupon` values: `code` (stored in upper case), `discountType` `percent` or `fixed`,
