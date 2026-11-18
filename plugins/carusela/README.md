@@ -23,7 +23,7 @@ If your account reaches more than one club, every tool needs a `club_id`. Ask Cl
 | skill | when it fires |
 |---|---|
 | `club-orientation` | before the first write. The tool map, the three rings, and what MCP will never do |
-| `seed-club-content` | importing or bulk-creating courses, recordings, tutorials, guides and agents |
+| `seed-club-content` | importing or bulk-creating courses, recordings, tutorials, guides and agents, and moving mail from Rav Messer |
 | `brand-a-club` | colours, logo, favicon, social card, published in the same call |
 | `gate-club-access` | deciding what each access tier reaches |
 | `build-sales-funnel` | offers, coupons, a Sales page (blocks, a designed HTML page, or the club's own site) and its Funnel, live in the call the owner asks for |
