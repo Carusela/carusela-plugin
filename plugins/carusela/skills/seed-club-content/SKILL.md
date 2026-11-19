@@ -192,11 +192,14 @@ When the owner is leaving Schooler, Rav Messer, Teachable or similar, decide fir
   `imported_message_id` renders an imported email. A message whose findings include
   `subject_from_step_name` is one whose subject the owner should check. The imported emails still
   load their images from Rav Messer's servers, which stop serving them once the club leaves: call
-  `copy_imported_mail_images` until `done` is true (each call works through up to 10 emails), then tell
-  the owner which images could not be copied, from each email's `image_findings` (or
-  `imported_image_findings` in a preview), so they can replace them. `retry_failed` tries the failed
-  images once more. If `tools/list` has no `copy_imported_mail_images`, the club's server predates it:
-  say the images still come from Rav Messer for now. If `tools/list` has no `stage_rav_messer_mail_part`, the club's server
+  `copy_imported_mail_images` until `done` is true (each call works through up to 10 emails). Then tell
+  the owner which images could not be copied, so they can replace them: `get_imported_mail` lists each
+  email's `image_finding_codes`, and only for an email that has some, `get_imported_mail` with its
+  `message_id` gives `image_findings` (each a code and the image's host; `imported_image_findings` in a
+  preview). `retry_failed` makes one more pass over the failed images: call it again with `after_id`
+  set to the answer's `next_after_id` (omit it when that is null) until `done` is true. If `tools/list`
+  has no `copy_imported_mail_images`, the club's server predates it: say the images still come from
+  Rav Messer for now. If `tools/list` has no `stage_rav_messer_mail_part`, the club's server
   predates it: say so, and offer to send the move to the Carusela team with
   `submit_support_request` rather than recreating the mail by hand.
   `club-migration://contract` (`rav_messer_mail`) has the same steps.
