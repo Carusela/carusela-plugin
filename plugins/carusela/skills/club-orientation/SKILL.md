@@ -17,6 +17,12 @@ telling you the change belongs somewhere else, usually because it decides money 
 If a refusal blocks the user's goal, the answer is to say so and name the right door. Never a
 workaround.
 
+**Never tell the owner a cause the refusal did not state.** Quote what it says and what it names
+as the next step. A refusal about one field is about that field: "that address is not one of the
+club's sender addresses" does not mean the club's domain failed to verify, and saying it does
+sends an owner who could send right now to the support queue. When the cause is unclear, read the
+state with the matching `get_` tool before you explain anything.
+
 **Never leave the owner at "that is impossible".** The owner always has an answer: the Carusela
 team. When the owner asks for something no tool here does, when a refusal blocks them and they
 have no door they can open themselves, or when something that should work does not, say it is
@@ -81,6 +87,7 @@ Three read-only calls. They cost nothing and they answer most of what you were a
 | Bring in a video or upload a file | `attach_media` |
 | Bring in members from another system | `import_members` |
 | Send members their access invite, after an import | `send_member_access_invites`: the first call sends nothing and returns the count and the skipped members; tell the owner the number, and send only after their yes |
+| Write and send a mailing or a series | `manage_email_campaign`, `manage_email_series`. Leave `sender_address` out: the mail goes from the club's default address, which `get_mailing_sender` names (`primary_address`, the club's verified domain, while `addresses.club_default` is null). Name an address only when the owner asks for a different one, and only one from `addresses.list`. Sending needs the owner's yes to the recipient count |
 | Bring in a newsletter list | A file, or over about 500 rows: `get_mailing_upload`. A short list: `import_mailing_contacts`, or `stage_mailing_contacts` when the club already sends (see below) |
 | Bring in mailings and series from Rav Messer | `stage_rav_messer_mail_part`, then `finish_rav_messer_mail_upload`, in a session of their own (see `seed-club-content`, Moving a club from another platform) |
 | See the mail imported from another mailing system | `get_imported_mail`, and `preview_email` with `imported_message_id` for one email. Drafts and an archive: nothing sends them |
