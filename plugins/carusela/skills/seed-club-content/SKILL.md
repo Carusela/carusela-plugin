@@ -467,8 +467,9 @@ walks the whole club.
 
 Check the tool exists first. If `generate_missing_covers` is not in `tools/list`, the club is on
 an older MCP version that does not have it. Say so and skip this step entirely; do not try to
-fake it with `generate_cover` in a loop. If the owner wants the covers anyway, offer to send it to
-the Carusela team with `submit_support_request` (see `club-orientation`, Asking the team).
+fake it with `generate_cover` in a loop. If the owner wants the covers anyway, send them to the
+cover studio in the admin (ניהול > הגדרות > AI ויצירת תמונות), which makes course and chapter
+covers; offer a request to the Carusela team only for what the studio does not do.
 
 Generation runs on the club's AI key, which is Carusela's unless the owner has set their own in
 admin > integrations. Either way it is counted against the club's daily cover limit.
